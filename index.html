@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breves Express — Transporte Rápido e Seguro</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  :root {
+    --g900: #0a2e14;
+    --g800: #0f4620;
+    --g700: #166130;
+    --g600: #1a7a3c;
+    --g500: #22a550;
+    --g400: #2ecc6a;
+    --g300: #5de68e;
+    --g200: #a8f5c4;
+    --g100: #d4fbea;
+    --g50:  #f0fef5;
+    --white: #ffffff;
+    --gray50: #f8fafc;
+    --gray100: #f1f5f9;
+    --gray200: #e2e8f0;
+    --gray300: #cbd5e1;
+    --gray400: #94a3b8;
+    --gray500: #64748b;
+    --gray700: #334155;
+    --gray900: #0f172a;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.06);
+    --shadow-xl: 0 20px 60px rgba(0,0,0,.12), 0 8px 20px rgba(0,0,0,.08);
+    --shadow-green: 0 8px 30px rgba(34,165,80,.25);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray900);
+    background: var(--white);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── NAVBAR ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    padding: 0 5vw;
+    height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: box-shadow .3s;
+  }
+  nav.scrolled { box-shadow: var(--shadow-md); }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--g500), var(--g700));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-green);
+  }
+  .nav-logo-icon svg { width: 20px; height: 20px; fill: white; }
+  .nav-logo-text { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--gray900); letter-spacing: -.02em; }
+  .nav-logo-text span { color: var(--g500); }
+  .nav-links { display: flex; align-items: center; gap: 2px; }
+  .nav-links a {
+    font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: .875rem;
+    color: var(--gray500); text-decoration: none; padding: 8px 14px;
+    border-radius: var(--radius-full); transition: all .2s;
+  }
+  .nav-links a:hover { color: var(--g600); background: var(--g50); }
+  .nav-cta {
+    background: var(--g500); color: white !important;
+    padding: 9px 20px !important;
+    box-shadow: var(--shadow-green);
+    font-weight: 600 !important;
+  }
+  .nav-cta:hover { background: var(--g600) !important; transform: translateY(-1px); box-shadow: 0 10px 36px rgba(34,165,80,.35) !important; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; }
+  .hamburger span { width: 24px; height: 2px; background: var(--gray700); border-radius: 2px; transition: .3s; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    padding-top: 68px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: linear-gradient(165deg, var(--g50) 0%, var(--white) 55%, var(--white) 100%);
+  }
+  .hero-pattern {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 55%;
+    background: linear-gradient(135deg, var(--g800) 0%, var(--g600) 50%, var(--g400) 100%);
+    clip-path: polygon(8% 0%, 100% 0%, 100% 100%, 0% 100%);
+    z-index: 0;
+  }
+  .hero-pattern::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-left {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 80px 5vw 80px 8vw;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--g100); color: var(--g700);
+    font-family: 'Sora', sans-serif; font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: var(--radius-full);
+    margin-bottom: 24px; width: fit-content;
+  }
+  .hero-badge-dot { width: 7px; height: 7px; background: var(--g500); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:.7} }
+  .hero-title {
+    font-family: 'Sora', sans-serif; font-size: clamp(2.4rem, 4vw, 3.6rem);
+    font-weight: 800; line-height: 1.1; letter-spacing: -.03em;
+    color: var(--gray900); margin-bottom: 20px;
+  }
+  .hero-title .accent { color: var(--g500); }
+  .hero-sub {
+    font-size: 1.05rem; line-height: 1.7; color: var(--gray500);
+    max-width: 420px; margin-bottom: 36px; font-weight: 300;
+  }
+  .hero-stats { display: flex; gap: 32px; margin-bottom: 36px; }
+  .stat-item { display: flex; flex-direction: column; }
+  .stat-val { font-family: 'Sora', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--g600); letter-spacing: -.04em; }
+  .stat-label { font-size: .78rem; color: var(--gray400); font-weight: 500; margin-top: 2px; }
+  .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--g500); color: white;
+    font-family: 'Sora', sans-serif; font-weight: 600; font-size: .9rem;
+    padding: 14px 26px; border-radius: var(--radius-full);
+    text-decoration: none; border: none; cursor: pointer;
+    box-shadow: var(--shadow-green); transition: all .25s;
+  }
+  .btn-primary:hover { background: var(--g600); transform: translateY(-2px); box-shadow: 0 14px 40px rgba(34,165,80,.35); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--gray700);
+    font-family: 'Sora', sans-serif; font-weight: 600; font-size: .9rem;
+    padding: 13px 24px; border-radius: var(--radius-full);
+    text-decoration: none; border: 1.5px solid var(--gray200); cursor: pointer;
+    transition: all .25s;
+  }
+  .btn-secondary:hover { border-color: var(--g300); color: var(--g600); background: var(--g50); }
+
+  .hero-right {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px 6vw 60px 3vw;
+  }
+
+  /* ─── QUOTE CARD ─── */
+  .quote-card {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    width: 100%; max-width: 460px;
+    padding: 36px;
+    animation: floatUp .8s ease both;
+  }
+  @keyframes floatUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .qc-header { margin-bottom: 28px; }
+  .qc-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--gray900); }
+  .qc-sub { font-size: .82rem; color: var(--gray400); margin-top: 4px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: .75rem; font-weight: 600; color: var(--gray500); letter-spacing: .02em; text-transform: uppercase; }
+  .form-input, .form-select {
+    padding: 11px 14px;
+    border: 1.5px solid var(--gray200); border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: .9rem; color: var(--gray900);
+    background: var(--gray50); outline: none; transition: all .2s;
+    appearance: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--g400); background: white; box-shadow: 0 0 0 3px rgba(34,165,80,.1); }
+  .form-input::placeholder { color: var(--gray300); }
+  .select-wrap { position: relative; }
+  .select-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--gray400); pointer-events: none; font-size: .8rem; }
+  .calc-btn {
+    width: 100%; margin-top: 18px;
+    background: linear-gradient(135deg, var(--g500), var(--g600));
+    color: white; border: none; border-radius: var(--radius-full);
+    padding: 15px 24px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem;
+    cursor: pointer; box-shadow: var(--shadow-green); transition: all .25s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .calc-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 42px rgba(34,165,80,.4); }
+  .calc-btn:active { transform: translateY(0); }
+  .calc-btn svg { width: 18px; height: 18px; }
+
+  /* Result Panel */
+  .result-panel {
+    margin-top: 22px; padding: 20px;
+    background: var(--g50); border-radius: var(--radius-md);
+    border: 1.5px solid var(--g200);
+    display: none;
+    animation: fadeIn .4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .result-panel.show { display: block; }
+  .result-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: .85rem; color: var(--g700); margin-bottom: 14px; text-transform: uppercase; letter-spacing: .05em; }
+  .service-options { display: flex; flex-direction: column; gap: 8px; }
+  .service-item {
+    background: white; border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border: 1.5px solid var(--gray200);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: all .2s;
+  }
+  .service-item:hover, .service-item.selected { border-color: var(--g400); background: var(--g50); }
+  .service-item.selected { box-shadow: 0 0 0 2px rgba(34,165,80,.15); }
+  .si-left { display: flex; align-items: center; gap: 10px; }
+  .si-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .si-icon.eco { background: #e8f5e9; }
+  .si-icon.exp { background: #fff3e0; }
+  .si-icon.pri { background: #fce4ec; }
+  .si-name { font-family: 'Sora', sans-serif; font-weight: 600; font-size: .82rem; color: var(--gray900); }
+  .si-eta { font-size: .75rem; color: var(--gray400); margin-top: 1px; }
+  .si-price { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1rem; color: var(--g600); }
+
+  /* ─── TRACKING SECTION ─── */
+  .section { padding: 90px 8vw; }
+  .section-label { font-family: 'Sora', sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--g500); margin-bottom: 12px; }
+  .section-title { font-family: 'Sora', sans-serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; letter-spacing: -.03em; color: var(--gray900); margin-bottom: 16px; }
+  .section-sub { font-size: 1rem; color: var(--gray400); max-width: 500px; line-height: 1.7; font-weight: 300; }
+  .section-header { margin-bottom: 52px; }
+
+  .tracking-section { background: var(--gray900); color: white; }
+  .tracking-section .section-label { color: var(--g300); }
+  .tracking-section .section-title { color: white; }
+  .tracking-section .section-sub { color: var(--gray400); }
+  .track-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  .track-input-group {
+    display: flex; gap: 0;
+    background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.1);
+    border-radius: var(--radius-full); overflow: hidden; margin-bottom: 20px;
+  }
+  .track-input {
+    flex: 1; padding: 15px 22px;
+    background: transparent; border: none; outline: none;
+    color: white; font-family: 'DM Sans', sans-serif; font-size: .95rem;
+  }
+  .track-input::placeholder { color: rgba(255,255,255,.3); }
+  .track-btn {
+    background: var(--g500); color: white; border: none;
+    padding: 14px 24px; cursor: pointer; font-family: 'Sora', sans-serif; font-weight: 600; font-size: .85rem;
+    transition: background .2s; white-space: nowrap;
+  }
+  .track-btn:hover { background: var(--g400); }
+  .track-status { display: none; }
+  .track-status.show { display: block; animation: fadeIn .4s ease; }
+  .track-timeline { position: relative; padding-left: 24px; }
+  .track-timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: rgba(255,255,255,.1); }
+  .timeline-item { position: relative; padding-bottom: 24px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -20px; top: 4px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.2);
+  }
+  .timeline-item.done .timeline-dot { background: var(--g500); border-color: var(--g400); }
+  .timeline-item.active .timeline-dot { background: var(--g400); border-color: var(--g300); box-shadow: 0 0 0 4px rgba(46,204,106,.2); animation: pulse 2s infinite; }
+  .tl-time { font-size: .72rem; color: var(--gray400); margin-bottom: 3px; }
+  .tl-event { font-family: 'Sora', sans-serif; font-weight: 600; font-size: .85rem; color: white; }
+  .tl-loc { font-size: .8rem; color: var(--gray500); margin-top: 2px; }
+  .track-map-placeholder {
+    background: rgba(255,255,255,.04); border: 1.5px solid rgba(255,255,255,.08);
+    border-radius: var(--radius-lg); height: 320px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; overflow: hidden; position: relative;
+  }
+  .map-svg { width: 100%; height: 100%; opacity: .3; }
+
+  /* ─── FEATURES ─── */
+  .features-section { background: var(--gray50); }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .feature-card {
+    background: white; border-radius: var(--radius-lg); padding: 32px 28px;
+    border: 1px solid var(--gray100); transition: all .3s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--g500), var(--g300));
+    transform: scaleX(0); transform-origin: left; transition: transform .3s;
+  }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: transparent; }
+  .feature-card:hover::before { transform: scaleX(1); }
+  .fc-icon {
+    width: 52px; height: 52px; border-radius: var(--radius-md);
+    background: var(--g50); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px; font-size: 1.4rem;
+  }
+  .fc-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem; color: var(--gray900); margin-bottom: 10px; }
+  .fc-desc { font-size: .875rem; color: var(--gray400); line-height: 1.6; font-weight: 300; }
+
+  /* ─── SERVICES TABS ─── */
+  .services-tabs { display: flex; gap: 8px; margin-bottom: 36px; flex-wrap: wrap; }
+  .tab-btn {
+    font-family: 'Sora', sans-serif; font-weight: 600; font-size: .82rem;
+    padding: 9px 18px; border-radius: var(--radius-full); border: 1.5px solid var(--gray200);
+    background: white; color: var(--gray500); cursor: pointer; transition: all .2s;
+  }
+  .tab-btn.active { background: var(--g500); color: white; border-color: var(--g500); box-shadow: var(--shadow-green); }
+  .tab-content { display: none; animation: fadeIn .3s ease; }
+  .tab-content.active { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .service-detail-img {
+    background: linear-gradient(135deg, var(--g50), var(--g100));
+    border-radius: var(--radius-xl); height: 320px;
+    display: flex; align-items: center; justify-content: center; font-size: 5rem;
+    border: 1px solid var(--g200);
+  }
+  .service-detail h3 { font-family: 'Sora', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--gray900); margin-bottom: 14px; letter-spacing: -.03em; }
+  .service-detail p { color: var(--gray500); line-height: 1.7; margin-bottom: 20px; font-weight: 300; }
+  .service-detail ul { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .service-detail ul li { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: var(--gray700); }
+  .check { width: 20px; height: 20px; background: var(--g100); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .7rem; color: var(--g600); font-weight: 700; }
+
+  /* ─── ABOUT ─── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .about-visual {
+    background: linear-gradient(135deg, var(--g800), var(--g600));
+    border-radius: var(--radius-xl); padding: 48px 40px;
+    color: white; position: relative; overflow: hidden;
+  }
+  .about-visual::after {
+    content: ''; position: absolute; bottom: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,.05);
+  }
+  .av-icon { font-size: 3.5rem; margin-bottom: 20px; }
+  .av-title { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.6rem; margin-bottom: 12px; letter-spacing: -.02em; }
+  .av-text { font-size: .9rem; line-height: 1.7; opacity: .8; font-weight: 300; }
+  .av-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+  .av-stat { background: rgba(255,255,255,.1); border-radius: var(--radius-md); padding: 16px; backdrop-filter: blur(8px); }
+  .av-stat-val { font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .av-stat-label { font-size: .75rem; opacity: .6; margin-top: 3px; }
+  .about-content .section-label { display: block; margin-bottom: 12px; }
+  .about-content .section-title { margin-bottom: 20px; }
+  .about-content p { color: var(--gray400); line-height: 1.75; font-size: .95rem; font-weight: 300; margin-bottom: 16px; }
+  .value-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+  .pill {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--g50); color: var(--g700); border: 1px solid var(--g200);
+    font-size: .8rem; font-weight: 600; padding: 7px 14px; border-radius: var(--radius-full);
+    font-family: 'Sora', sans-serif;
+  }
+
+  /* ─── CHAT WIDGET ─── */
+  .chat-float {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  }
+  .chat-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--g500), var(--g700));
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-green); transition: all .3s;
+    color: white; font-size: 1.4rem;
+  }
+  .chat-btn:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(34,165,80,.4); }
+  .chat-badge {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; background: #ef4444; border-radius: 50%;
+    border: 2px solid white; font-size: .6rem; color: white; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chat-popup {
+    position: absolute; bottom: 68px; right: 0;
+    width: 320px; background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl); overflow: hidden;
+    display: none; animation: slideUp .3s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .chat-popup.open { display: block; }
+  .chat-header { background: linear-gradient(135deg, var(--g700), var(--g500)); padding: 18px 20px; color: white; }
+  .ch-name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: .95rem; }
+  .ch-status { font-size: .75rem; opacity: .8; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+  .ch-dot { width: 7px; height: 7px; background: var(--g200); border-radius: 50%; }
+  .chat-body { padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: 14px; font-size: .84rem; line-height: 1.5; }
+  .msg.agent { background: var(--gray100); color: var(--gray900); border-radius: 4px 14px 14px 14px; }
+  .msg.user-msg { background: var(--g500); color: white; align-self: flex-end; border-radius: 14px 4px 14px 14px; }
+  .chat-input-row { display: flex; border-top: 1px solid var(--gray100); padding: 10px; gap: 8px; }
+  .chat-in {
+    flex: 1; padding: 9px 12px; border: 1px solid var(--gray200); border-radius: var(--radius-full);
+    font-family: 'DM Sans', sans-serif; font-size: .84rem; outline: none;
+  }
+  .chat-send {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--g500);
+    border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: .85rem;
+    transition: background .2s; flex-shrink: 0;
+  }
+  .chat-send:hover { background: var(--g600); }
+  .whatsapp-link {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 0 16px 14px; padding: 10px;
+    background: #25d366; color: white; border-radius: var(--radius-full);
+    text-decoration: none; font-family: 'Sora', sans-serif; font-weight: 600; font-size: .82rem;
+    transition: background .2s;
+  }
+  .whatsapp-link:hover { background: #1ebe57; }
+
+  /* ─── AUTH MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
+  .modal {
+    background: white; border-radius: var(--radius-xl); width: 100%; max-width: 420px;
+    padding: 40px; margin: 20px; position: relative;
+    animation: floatUp .3s ease;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--gray100);
+    cursor: pointer; font-size: 1rem; color: var(--gray400); display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .modal-close:hover { background: var(--gray200); color: var(--gray700); }
+  .modal-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .modal-title { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--gray900); margin-bottom: 6px; }
+  .modal-sub { font-size: .875rem; color: var(--gray400); margin-bottom: 28px; }
+  .auth-tabs { display: flex; background: var(--gray100); border-radius: var(--radius-full); padding: 4px; margin-bottom: 24px; }
+  .auth-tab { flex: 1; text-align: center; padding: 9px; border-radius: var(--radius-full); font-family: 'Sora', sans-serif; font-weight: 600; font-size: .82rem; cursor: pointer; transition: all .2s; color: var(--gray400); }
+  .auth-tab.active { background: white; color: var(--g600); box-shadow: var(--shadow-sm); }
+  .auth-form { display: flex; flex-direction: column; gap: 14px; }
+  .auth-btn {
+    background: linear-gradient(135deg, var(--g500), var(--g600)); color: white;
+    border: none; border-radius: var(--radius-full); padding: 14px;
+    font-family: 'Sora', sans-serif; font-weight: 700; font-size: .95rem; cursor: pointer;
+    box-shadow: var(--shadow-green); transition: all .25s; margin-top: 4px;
+  }
+  .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 36px rgba(34,165,80,.35); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--gray900); color: white; padding: 64px 8vw 32px;
+  }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .footer-brand .nav-logo-text { color: white; font-size: 1.3rem; }
+  .footer-brand .nav-logo-text span { color: var(--g400); }
+  .footer-tagline { font-size: .85rem; color: var(--gray400); line-height: 1.6; margin-top: 12px; max-width: 260px; font-weight: 300; }
+  .footer-col h4 { font-family: 'Sora', sans-serif; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gray400); margin-bottom: 16px; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col ul li a { color: var(--gray500); text-decoration: none; font-size: .875rem; transition: color .2s; }
+  .footer-col ul li a:hover { color: var(--g300); }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,.06); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; }
+  .footer-copy { font-size: .8rem; color: var(--gray500); }
+  .footer-socials { display: flex; gap: 10px; }
+  .social-icon {
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center;
+    color: var(--gray400); text-decoration: none; font-size: .9rem; transition: all .2s;
+  }
+  .social-icon:hover { background: var(--g600); color: white; }
+
+  /* ─── LOADING ANIMATION ─── */
+  .spinner { width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-pattern { display: none; }
+    .hero-left { padding: 60px 6vw 40px; }
+    .hero-right { padding: 0 6vw 60px; }
+    .track-wrap, .about-grid, .tab-content.active { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .features-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .section { padding: 64px 5vw; }
+    .hero-stats { gap: 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 2rem; }
+  }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    </div>
+    <span class="nav-logo-text">Breves<span>Express</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#cotacao">Cotação</a>
+    <a href="#rastreio">Rastreio</a>
+    <a href="#servicos">Serviços</a>
+    <a href="#sobre">Sobre</a>
+    <a href="#" class="nav-cta" onclick="openModal()">Área do Cliente</a>
+  </div>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="cotacao">
+  <div class="hero-bg"></div>
+  <div class="hero-pattern"></div>
+
+  <div class="hero-left">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Transporte Expresso Disponível</div>
+    <h1 class="hero-title">Frete rápido,<br>preciso e <span class="accent">seguro.</span></h1>
+    <p class="hero-sub">Cotação em segundos, entrega com rastreio em tempo real. Do seu ponto A ao B com agilidade e confiança.</p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-val">98%</span>
+        <span class="stat-label">Entregas no prazo</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">+50k</span>
+        <span class="stat-label">Envios realizados</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">24h</span>
+        <span class="stat-label">Suporte ativo</span>
+      </div>
+    </div>
+    <div class="hero-buttons">
+      <a href="#servicos" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.72L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5V2.05z"/></svg>
+        Ver Serviços
+      </a>
+      <a href="#rastreio" class="btn-secondary">
+        Rastrear Pedido →
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="quote-card">
+      <div class="qc-header">
+        <div class="qc-title">Calcule seu frete agora</div>
+        <div class="qc-sub">Cotação instantânea sem compromisso</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Origem</label>
+          <input type="text" class="form-input" placeholder="Cidade de origem" id="origem" list="cidades-list">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Destino</label>
+          <input type="text" class="form-input" placeholder="Cidade de destino" id="destino" list="cidades-list">
+        </div>
+        <datalist id="cidades-list">
+          <option value="Sinop - MT">
+          <option value="Tabaporã - MT">
+          <option value="Juara - MT">
+          <option value="Porto dos Gaúchos - MT">
+          <option value="Americana do Norte - MT">
+          <option value="Novo Horizonte do Norte - MT">
+          <option value="Novo Paraná - MT">
+        </datalist>
+        <div class="form-group">
+          <label class="form-label">Peso (kg)</label>
+          <input type="number" class="form-input" placeholder="Ex: 10" id="peso" min="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de carga</label>
+          <div class="select-wrap">
+            <select class="form-select" id="tipo">
+              <option value="">Selecione…</option>
+              <option>Carga geral</option>
+              <option>Frágil</option>
+              <option>Perecível</option>
+              <option>Eletrônicos</option>
+              <option>Documentos</option>
+              <option>Móveis / volumosos</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Dimensões (opcional)</label>
+          <input type="text" class="form-input" placeholder="C × L × A em cm (ex: 30×20×15)">
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcularFrete()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <span id="btn-text">Calcular Frete</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+
+      <div class="result-panel" id="result">
+        <div class="result-title">📦 Opções disponíveis</div>
+        <div class="service-options" id="service-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RASTREIO -->
+<section class="section tracking-section" id="rastreio">
+  <div class="track-wrap">
+    <div>
+      <div class="section-label">Rastreamento</div>
+      <h2 class="section-title">Onde está<br>sua carga?</h2>
+      <p class="section-sub">Insira o código de rastreio e acompanhe cada etapa da entrega em tempo real.</p>
+      <div style="margin-top: 32px;">
+        <div class="track-input-group">
+          <input type="text" class="track-input" placeholder="Ex: BRV2024001234" id="track-code">
+          <button class="track-btn" onclick="rastrear()">Rastrear</button>
+        </div>
+        <div class="track-status" id="track-status">
+          <div style="font-size:.78rem;color:var(--gray400);margin-bottom:16px;font-family:'Sora',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Atualização em tempo real</div>
+          <div class="track-timeline" id="timeline"></div>
+        </div>
+      </div>
+    </div>
+    <div class="track-map-placeholder" style="padding:0;overflow:hidden;position:relative;">
+      <div id="map" style="width:100%;height:100%;border-radius:var(--radius-lg);min-height:320px;"></div>
+      <div id="map-legend" style="position:absolute;bottom:12px;left:12px;z-index:1000;background:rgba(15,23,42,.82);backdrop-filter:blur(8px);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:'Sora',sans-serif;font-size:.65rem;font-weight:700;color:#5de68e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;">Rotas Breves Express</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:linear-gradient(135deg,#2ecc6a,#166130);border:2px solid #fff;border-radius:50%;display:inline-block;box-shadow:0 0 0 3px rgba(34,165,80,.3);"></span>Sinop — Base principal</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;"><span style="width:14px;height:3px;background:#22a550;border-radius:2px;display:inline-block;"></span>Rota principal</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;"><span style="width:14px;height:3px;background:#5de68e;border-radius:2px;display:inline-block;opacity:.8"></span>Rota secundária</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;background:#22a550;border-radius:50%;display:inline-block;"></span>Cidade atendida</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section features-section reveal" id="features">
+  <div class="section-header">
+    <div class="section-label">Por que a Breves Express</div>
+    <h2 class="section-title">Feito para quem não<br>pode esperar</h2>
+    <p class="section-sub">Cada funcionalidade foi pensada para economizar o seu tempo e garantir a tranquilidade da entrega.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="fc-icon">⚡</div>
+      <div class="fc-title">Cotação em Segundos</div>
+      <p class="fc-desc">Calcule o valor do frete instantaneamente sem burocracia. Preencha origem, destino e peso — pronto.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="fc-icon">📡</div>
+      <div class="fc-title">Rastreio em Tempo Real</div>
+      <p class="fc-desc">Acompanhe o status do seu pedido a cada etapa, com notificações automáticas de atualização.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="fc-icon">🔒</div>
+      <div class="fc-title">Seguro Incluído</div>
+      <p class="fc-desc">Sua carga protegida contra imprevistos. Oferecemos cobertura automática em todos os envios.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="fc-icon">🗺️</div>
+      <div class="fc-title">Rotas Otimizadas</div>
+      <p class="fc-desc">Tecnologia de roteirização inteligente para garantir o menor prazo e custo possível na entrega.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="fc-icon">📊</div>
+      <div class="fc-title">Histórico Completo</div>
+      <p class="fc-desc">Acesse todos os seus envios anteriores, faturas e comprovantes de entrega de forma organizada.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="fc-icon">💬</div>
+      <div class="fc-title">Suporte 24/7</div>
+      <p class="fc-desc">Time de atendimento disponível via chat ou WhatsApp a qualquer hora para resolver qualquer dúvida.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section reveal" id="servicos">
+  <div class="section-header">
+    <div class="section-label">Modalidades</div>
+    <h2 class="section-title">Escolha o serviço<br>ideal para você</h2>
+  </div>
+  <div class="services-tabs">
+    <button class="tab-btn active" onclick="switchTab('economico', this)">Econômico</button>
+    <button class="tab-btn" onclick="switchTab('expresso', this)">Expresso</button>
+    <button class="tab-btn" onclick="switchTab('prioritario', this)">Prioritário</button>
+  </div>
+
+  <div class="tab-content active" id="tab-economico">
+    <div class="service-detail-img">🚚</div>
+    <div class="service-detail">
+      <h3>Econômico</h3>
+      <p>A opção mais acessível para quem pode aguardar um prazo maior. Ideal para cargas não urgentes com bom custo-benefício.</p>
+      <ul>
+        <li><span class="check">✓</span> Prazo de 5 a 7 dias úteis</li>
+        <li><span class="check">✓</span> Cobertura em todo o Brasil</li>
+        <li><span class="check">✓</span> Rastreio incluído</li>
+        <li><span class="check">✓</span> Seguro básico incluído</li>
+      </ul>
+      <button class="btn-primary" onclick="document.getElementById('cotacao').scrollIntoView({behavior:'smooth'})">Cotar agora →</button>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-expresso">
+    <div class="service-detail-img">✈️</div>
+    <div class="service-detail">
+      <h3>Expresso</h3>
+      <p>Quando o prazo é curto. Rotas aéreas e terrestres prioritárias com entrega garantida em até 48 horas.</p>
+      <ul>
+        <li><span class="check">✓</span> Prazo de 1 a 2 dias úteis</li>
+        <li><span class="check">✓</span> Notificações em tempo real</li>
+        <li><span class="check">✓</span> Seguro ampliado</li>
+        <li><span class="check">✓</span> Coleta em domicílio</li>
+      </ul>
+      <button class="btn-primary" onclick="document.getElementById('cotacao').scrollIntoView({behavior:'smooth'})">Cotar agora →</button>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-prioritario">
+    <div class="service-detail-img">🚀</div>
+    <div class="service-detail">
+      <h3>Prioritário</h3>
+      <p>Máxima prioridade para cargas urgentes. Entrega no mesmo dia ou em até 24 horas com dedicação exclusiva.</p>
+      <ul>
+        <li><span class="check">✓</span> Entrega no mesmo dia ou 24h</li>
+        <li><span class="check">✓</span> Motorista dedicado</li>
+        <li><span class="check">✓</span> Seguro premium</li>
+        <li><span class="check">✓</span> Coleta em 2 horas</li>
+      </ul>
+      <button class="btn-primary" onclick="document.getElementById('cotacao').scrollIntoView({behavior:'smooth'})">Cotar agora →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section features-section reveal" id="sobre">
+  <div class="about-grid">
+    <div class="about-visual">
+      <div class="av-icon">🌿</div>
+      <div class="av-title">Nossa missão</div>
+      <div class="av-text">Conectar pessoas e negócios com agilidade, segurança e tecnologia. Cada entrega é um compromisso.</div>
+      <div class="av-stats">
+        <div class="av-stat">
+          <div class="av-stat-val">2018</div>
+          <div class="av-stat-label">Fundação</div>
+        </div>
+        <div class="av-stat">
+          <div class="av-stat-val">12+</div>
+          <div class="av-stat-label">Estados cobertos</div>
+        </div>
+        <div class="av-stat">
+          <div class="av-stat-val">50k+</div>
+          <div class="av-stat-label">Clientes satisfeitos</div>
+        </div>
+        <div class="av-stat">
+          <div class="av-stat-val">200+</div>
+          <div class="av-stat-label">Cidades atendidas</div>
+        </div>
+      </div>
+    </div>
+    <div class="about-content">
+      <span class="section-label">Sobre nós</span>
+      <h2 class="section-title">A transportadora que cresce com você</h2>
+      <p>A Breves Express nasceu da necessidade real de um transporte de cargas mais ágil, transparente e acessível para pequenas e médias empresas brasileiras.</p>
+      <p>Combinamos tecnologia de ponta com a expertise de uma equipe dedicada para oferecer o melhor serviço logístico do mercado. Nosso app e plataforma permitem que você cotize, envie e rastreie em segundos.</p>
+      <p>Acreditamos que logística eficiente é um direito de todo negócio, não um privilégio de grandes corporações.</p>
+      <div class="value-pills">
+        <span class="pill">✦ Confiança</span>
+        <span class="pill">⚡ Agilidade</span>
+        <span class="pill">💡 Tecnologia</span>
+        <span class="pill">🤝 Acessibilidade</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo" style="margin-bottom:12px">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        </div>
+        <span class="nav-logo-text">Breves<span>Express</span></span>
+      </div>
+      <p class="footer-tagline">Transporte rápido, seguro e tecnológico. Sua carga em boas mãos, sempre.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Serviços</h4>
+      <ul>
+        <li><a href="#">Frete Econômico</a></li>
+        <li><a href="#">Frete Expresso</a></li>
+        <li><a href="#">Frete Prioritário</a></li>
+        <li><a href="#">Carga Especial</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Empresa</h4>
+      <ul>
+        <li><a href="#sobre">Sobre Nós</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Carreiras</a></li>
+        <li><a href="#">Parceiros</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Suporte</h4>
+      <ul>
+        <li><a href="#">Central de Ajuda</a></li>
+        <li><a href="#rastreio">Rastrear Pedido</a></li>
+        <li><a href="#">Política de Privacidade</a></li>
+        <li><a href="#">Termos de Uso</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2024 Breves Express. Todos os direitos reservados.</span>
+    <div class="footer-socials">
+      <a class="social-icon" href="#" title="Instagram">📸</a>
+      <a class="social-icon" href="#" title="LinkedIn">💼</a>
+      <a class="social-icon" href="#" title="WhatsApp">💬</a>
+      <a class="social-icon" href="#" title="Facebook">📘</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CHAT WIDGET -->
+<div class="chat-float">
+  <div class="chat-popup" id="chat-popup">
+    <div class="chat-header">
+      <div class="ch-name">Suporte Breves Express</div>
+      <div class="ch-status"><span class="ch-dot"></span>Online agora</div>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <div class="msg agent">Olá! 👋 Sou o assistente da Breves Express. Como posso te ajudar hoje?</div>
+      <div class="msg agent">Posso te ajudar com cotações, rastreio de pedidos ou informações sobre nossos serviços.</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-in" placeholder="Digite sua mensagem…" id="chat-in" onkeypress="chatEnter(event)">
+      <button class="chat-send" onclick="sendChat()">➤</button>
+    </div>
+    <a class="whatsapp-link" href="https://wa.me/5500000000000" target="_blank">
+      💬 Continuar no WhatsApp
+    </a>
+  </div>
+  <button class="chat-btn" onclick="toggleChat()">
+    <span id="chat-icon">💬</span>
+    <div class="chat-badge">1</div>
+  </button>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOuter(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-logo">
+      <div class="nav-logo-icon" style="width:32px;height:32px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      </div>
+    </div>
+    <div class="modal-title">Área do Cliente</div>
+    <div class="modal-sub">Acesse sua conta para ver envios, histórico e cotar rapidamente.</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuth('login', this)">Entrar</div>
+      <div class="auth-tab" onclick="switchAuth('cadastro', this)">Criar conta</div>
+    </div>
+    <div class="auth-form" id="auth-login">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input type="email" class="form-input" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input type="password" class="form-input" placeholder="••••••••">
+      </div>
+      <button class="auth-btn">Entrar na conta</button>
+      <div style="text-align:center;font-size:.8rem;color:var(--gray400);margin-top:4px"><a href="#" style="color:var(--g500)">Esqueceu a senha?</a></div>
+    </div>
+    <div class="auth-form" id="auth-cadastro" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input type="text" class="form-input" placeholder="Seu nome">
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input type="email" class="form-input" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone</label>
+        <input type="tel" class="form-input" placeholder="(00) 00000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input type="password" class="form-input" placeholder="Mínimo 8 caracteres">
+      </div>
+      <button class="auth-btn">Criar minha conta</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// NAV SCROLL
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
+});
+
+// SCROLL REVEAL
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
+reveals.forEach(el => observer.observe(el));
+
+// HAMBURGER
+function toggleMenu() {
+  const links = document.querySelector('.nav-links');
+  links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+  links.style.flexDirection = 'column';
+  links.style.position = 'absolute';
+  links.style.top = '68px'; links.style.left = '0'; links.style.right = '0';
+  links.style.background = 'white'; links.style.padding = '12px 20px';
+  links.style.boxShadow = '0 8px 24px rgba(0,0,0,.08)';
+}
+
+// FRETE CALC
+function calcularFrete() {
+  const origem = document.getElementById('origem').value.trim();
+  const destino = document.getElementById('destino').value.trim();
+  const peso = parseFloat(document.getElementById('peso').value) || 0;
+  const tipo = document.getElementById('tipo').value;
+  if (!origem || !destino || !peso || !tipo) {
+    alert('Por favor, preencha todos os campos obrigatórios.');
+    return;
+  }
+
+  const btn = document.querySelector('.calc-btn');
+  const txt = document.getElementById('btn-text');
+  const spin = document.getElementById('spinner');
+  btn.disabled = true; txt.textContent = 'Calculando…'; spin.style.display = 'block';
+
+  setTimeout(() => {
+    btn.disabled = false; txt.textContent = 'Calcular Frete'; spin.style.display = 'none';
+
+    const base = peso * 4.5 + Math.random() * 20 + 15;
+    const services = [
+      { id:'eco', icon:'🟢', cls:'eco', nome:'Econômico', mult:1, eta:'5–7 dias úteis' },
+      { id:'exp', icon:'🟡', cls:'exp', nome:'Expresso', mult:1.8, eta:'1–2 dias úteis' },
+      { id:'pri', icon:'🔴', cls:'pri', nome:'Prioritário', mult:2.8, eta:'Mesmo dia / 24h' }
+    ];
+
+    const list = document.getElementById('service-list');
+    list.innerHTML = services.map(s => `
+      <div class="service-item" onclick="selectService(this)">
+        <div class="si-left">
+          <div class="si-icon ${s.cls}">${s.icon}</div>
+          <div>
+            <div class="si-name">${s.nome}</div>
+            <div class="si-eta">⏱ ${s.eta}</div>
+          </div>
+        </div>
+        <div class="si-price">R$ ${(base * s.mult).toFixed(2).replace('.', ',')}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('result').classList.add('show');
+  }, 1200);
+}
+
+function selectService(el) {
+  document.querySelectorAll('.service-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// RASTREIO
+const fakeTimeline = [
+  { time:'20/11 08:14', ev:'Pedido coletado', loc:'São Paulo, SP', done:true, active:false },
+  { time:'20/11 14:32', ev:'Em triagem no centro logístico', loc:'Campinas, SP', done:true, active:false },
+  { time:'21/11 03:20', ev:'Em trânsito para destino', loc:'Rota BR-116', done:true, active:false },
+  { time:'21/11 16:00', ev:'Chegou ao CD de destino', loc:'Curitiba, PR', done:false, active:true },
+  { time:'22/11 — (previsto)', ev:'Saiu para entrega', loc:'Rota local', done:false, active:false },
+];
+
+function rastrear() {
+  const code = document.getElementById('track-code').value.trim();
+  if (!code) { alert('Insira um código de rastreio.'); return; }
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = fakeTimeline.map(item => `
+    <div class="timeline-item ${item.done?'done':''} ${item.active?'active':''}">
+      <div class="timeline-dot"></div>
+      <div class="tl-time">${item.time}</div>
+      <div class="tl-event">${item.ev}</div>
+      <div class="tl-loc">📍 ${item.loc}</div>
+    </div>
+  `).join('');
+  document.getElementById('track-status').classList.add('show');
+}
+
+// TABS
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// CHAT
+function toggleChat() {
+  const p = document.getElementById('chat-popup');
+  p.classList.toggle('open');
+  document.querySelector('.chat-badge').style.display = 'none';
+  document.getElementById('chat-icon').textContent = p.classList.contains('open') ? '✕' : '💬';
+}
+
+function sendChat() {
+  const input = document.getElementById('chat-in');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const body = document.getElementById('chat-body');
+  body.innerHTML += `<div class="msg user-msg">${msg}</div>`;
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+  setTimeout(() => {
+    body.innerHTML += `<div class="msg agent">Entendido! Um de nossos atendentes entrará em contato em breve. Ou fale pelo WhatsApp para resposta imediata. 🚀</div>`;
+    body.scrollTop = body.scrollHeight;
+  }, 800);
+}
+
+function chatEnter(e) { if (e.key === 'Enter') sendChat(); }
+
+// MODAL
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOuter(e) { if (e.target.id === 'modal') closeModal(); }
+
+function switchAuth(type, btn) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-login').style.display = type === 'login' ? 'flex' : 'none';
+  document.getElementById('auth-cadastro').style.display = type === 'cadastro' ? 'flex' : 'none';
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ─── MAPA INTERATIVO — ROTAS BREVES EXPRESS ───
+(function initMap() {
+  // 0 = Sinop (base principal)
+  const cities = [
+    { name: 'Sinop',                  lat: -11.8544, lng: -55.5103, hub: 'base' },
+    { name: 'Tabaporã',               lat: -11.3085, lng: -56.8216, hub: true },
+    { name: 'Juara',                  lat: -11.2535, lng: -57.5088, hub: true },
+    { name: 'Porto dos Gaúchos',      lat: -11.5357, lng: -57.4120, hub: false },
+    { name: 'Americana do Norte',     lat: -11.6389, lng: -56.1418, hub: false },
+    { name: 'Novo Horizonte do Norte',lat: -11.3906, lng: -57.3148, hub: false },
+    { name: 'Novo Paraná',            lat: -11.6182, lng: -57.2343, hub: false },
+  ];
+
+  // Rotas saindo de Sinop (índice 0) para cada cidade
+  // Rota 1: Sinop → Tabaporã → Americana do Norte
+  const route1 = [0, 1, 4];
+  // Rota 2: Sinop → Tabaporã → Novo Paraná → Porto dos Gaúchos → Novo Horizonte do Norte → Juara
+  const route2 = [0, 1, 6, 3, 5, 2];
+
+  const map = L.map('map', {
+    center: [-11.6, -56.6],
+    zoom: 8,
+    zoomControl: true,
+    scrollWheelZoom: false,
+  });
+
+  // Dark-tinted tile layer
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Route polylines saindo de Sinop
+  const routeCoords1 = route1.map(i => [cities[i].lat, cities[i].lng]);
+  const routeCoords2 = route2.map(i => [cities[i].lat, cities[i].lng]);
+
+  L.polyline(routeCoords1, {
+    color: '#5de68e', weight: 2.5, opacity: .75, dashArray: '6, 5', lineJoin: 'round'
+  }).addTo(map);
+
+  L.polyline(routeCoords2, {
+    color: '#22a550', weight: 3, opacity: .85, dashArray: '8, 5', lineJoin: 'round'
+  }).addTo(map);
+
+  // Custom marker icon
+  function makeIcon(hub) {
+    if (hub === 'base') {
+      return L.divIcon({
+        className: '',
+        html: `<div style="
+          width:22px;height:22px;
+          background:linear-gradient(135deg,#2ecc6a,#166130);
+          border:3px solid #fff;
+          border-radius:50%;
+          box-shadow:0 0 0 6px rgba(34,165,80,.25), 0 2px 8px rgba(0,0,0,.4);
+        "></div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -14]
+      });
+    }
+    return L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${hub?16:13}px;height:${hub?16:13}px;
+        background:${hub?'#2ecc6a':'#22a550'};
+        border:2.5px solid ${hub?'#fff':'rgba(255,255,255,.6)'};
+        border-radius:50%;
+        box-shadow:0 0 0 ${hub?'5':'3'}px rgba(34,165,80,${hub?.3:.18});
+      "></div>`,
+      iconSize: [hub?16:13, hub?16:13],
+      iconAnchor: [hub?8:6.5, hub?8:6.5],
+      popupAnchor: [0, -12]
+    });
+  }
+
+  // Add markers + popups
+  cities.forEach(c => {
+    const marker = L.marker([c.lat, c.lng], { icon: makeIcon(c.hub) }).addTo(map);
+    marker.bindPopup(`
+      <div style="font-family:'Sora',sans-serif;padding:4px 2px;">
+        <div style="font-weight:700;font-size:.88rem;color:#0f172a;">${c.name}</div>
+        <div style="font-size:.75rem;color:#64748b;margin-top:3px;">📦 ${c.hub === 'base' ? 'Base principal de operações' : 'Coleta e entrega disponível'}</div>
+        <div style="margin-top:6px;">
+          <span style="font-size:.7rem;background:${c.hub==='base'?'#0f4620':'#f0fef5'};color:${c.hub==='base'?'#a8f5c4':'#166130'};border:1px solid ${c.hub==='base'?'#166130':'#a8f5c4'};border-radius:20px;padding:2px 8px;font-weight:600;">${c.hub === 'base' ? '🏢 Sede — Sinop/MT' : 'Rota Ativa'}</span>
+        </div>
+      </div>
+    `, { maxWidth: 200 });
+
+    // City label
+    L.marker([c.lat, c.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="
+          font-family:'Sora',sans-serif;font-size:.62rem;font-weight:700;
+          color:rgba(255,255,255,.9);white-space:nowrap;
+          text-shadow:0 1px 3px rgba(0,0,0,.8);
+          margin-top:${c.hub?12:10}px;margin-left:6px;
+          pointer-events:none;
+        ">${c.name}</div>`,
+        iconSize: [120, 20],
+        iconAnchor: [-2, 0]
+      })
+    }).addTo(map);
+  });
+
+  // Fit bounds to all cities with padding
+  const bounds = L.latLngBounds(cities.map(c => [c.lat, c.lng]));
+  map.fitBounds(bounds, { padding: [32, 32] });
+})();
+</script>
+
+</body></html>
