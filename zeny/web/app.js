@@ -9,7 +9,7 @@
   const STORE_KEY = 'zeny:v1';
   const defaults = () => ({
     tx: [], goals: [], subs: [], habits: [], tasks: [], chat: [],
-    settings: { apiKey: '', model: 'claude-sonnet-5', speak: false, userName: '' },
+    settings: { serverUrl: '', speak: false, userName: '' },
   });
   let S = load();
 
@@ -356,7 +356,7 @@
     }
 
     if (amt) return { reply: `Entendi o valor ${money(amt.value)}, mas foi um gasto ou uma entrada? Ex.: "gastei ${amt.value} no mercado" ou "recebi ${amt.value}".` };
-    return { reply: 'Não entendi muito bem. 🤔\n' + HELP + (S.settings.apiKey ? '' : '\n\nDica: adicione uma chave da API do Claude em Ajustes para conversar livremente.') };
+    return { reply: 'Não entendi muito bem. 🤔\n' + HELP + (serverUrl() ? '' : '\n\nDica: conecte o servidor da IA em Ajustes para conversar livremente.') };
   }
 
   const STOP_MONEY = ['gastei', 'paguei', 'comprei', 'recebi', 'ganhei', 'vendi', 'entrou', 'caiu', 'torrei', 'me', 'pagaram', 'hoje', 'ontem', 'amanha', 'amanhã', 'com', 'no', 'na', 'nos', 'nas', 'de', 'do', 'da', 'em', 'pra', 'para', 'o', 'a', 'os', 'as', 'um', 'uma', 'reais', 'real', 'r\\$', 'eu', 'foi', 'pela', 'pelo', 'empresa', 'pessoal', 'mais', 'uns', 'umas', 'e'];
@@ -389,67 +389,20 @@
     });
   }
 
-  const SYSTEM_PROMPT = `Você é o Zeny, um assistente pessoal brasileiro, simpático e objetivo, que organiza finanças (pessoais e da empresa), hábitos e tarefas do usuário a partir de mensagens de texto ou voz transcrita.
+  // URL do servidor: a dos Ajustes tem prioridade sobre a do config.js.
+  const serverUrl = () => (S.settings.serverUrl || (window.ZENY_CONFIG && window.ZENY_CONFIG.serverUrl) || '').replace(/\/+$/, '');
 
-Responda SEMPRE e SOMENTE com um objeto JSON válido, sem markdown, no formato:
-{"reply": "texto curto em português para o usuário", "actions": [ ... ]}
-
-Ações disponíveis (use quantas forem necessárias, ou nenhuma):
-- {"type":"add_transaction","kind":"in"|"out","amount":number,"description":string,"category":string,"scope":"pessoal"|"empresa","date":"YYYY-MM-DD"}
-  Categorias sugeridas: Alimentação, Transporte, Moradia, Saúde, Lazer, Educação, Compras, Assinaturas, Contas, Salário, Vendas, Outros, Outras receitas.
-- {"type":"add_task","title":string,"priority":"alta"|"media"|"baixa","due":"YYYY-MM-DD" ou "","time":"HH:MM" ou ""}
-- {"type":"complete_task","title":string}   (use o título exato de uma tarefa pendente)
-- {"type":"add_habit","name":string}
-- {"type":"check_habit","name":string,"date":"YYYY-MM-DD"}   (use o nome exato de um hábito existente)
-- {"type":"add_goal","name":string,"target":number}
-- {"type":"add_to_goal","name":string,"amount":number}
-- {"type":"add_subscription","name":string,"amount":number,"day":number}
-
-Regras:
-- Uma mensagem pode conter várias informações (ex.: "gastei 30 no uber e 50 no mercado" = 2 transações).
-- Calcule datas relativas (amanhã, sexta, dia 15) a partir da data de hoje do contexto.
-- Para perguntas (quanto gastei, o que tenho pra fazer, dicas), responda usando os dados do contexto, sem ações.
-- Se faltar informação essencial (ex.: valor), pergunte na "reply" e não crie a ação.
-- Respostas curtas, calorosas, podem ter 1 emoji. Use R$ no formato brasileiro.`;
-
-  async function askClaude(userText) {
-    const history = S.chat.slice(-12).map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
-    // A API exige que a conversa comece pelo usuário e alterne papéis.
-    while (history.length && history[0].role !== 'user') history.shift();
-    const msgs = [];
-    for (const m of history) {
-      if (msgs.length && msgs[msgs.length - 1].role === m.role) msgs[msgs.length - 1].content += '\n' + m.content;
-      else msgs.push({ ...m });
-    }
-    const content = `Contexto atual (JSON):\n${aiContext()}\n\nMensagem do usuário:\n${userText}`;
-    if (msgs.length && msgs[msgs.length - 1].role === 'user') msgs[msgs.length - 1].content += '\n' + content;
-    else msgs.push({ role: 'user', content });
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+  // A chave da API fica só no servidor; o app manda a mensagem e o contexto.
+  async function askServer(userText) {
+    const history = S.chat.slice(-13, -1).map(({ role, text }) => ({ role, text }));
+    const res = await fetch(serverUrl() + '/chat', {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': S.settings.apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({ model: S.settings.model || 'claude-sonnet-5', max_tokens: 1024, system: SYSTEM_PROMPT, messages: msgs }),
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message: userText, history, context: aiContext() }),
     });
-    if (!res.ok) {
-      let detail = '';
-      try { detail = (await res.json()).error?.message || ''; } catch (e) { /* ignora */ }
-      throw new Error(`API ${res.status}${detail ? ': ' + detail : ''}`);
-    }
-    const data = await res.json();
-    const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
-    const i = text.indexOf('{'), j = text.lastIndexOf('}');
-    if (i < 0 || j < i) return { reply: text.trim() || '…', actions: [] };
-    try {
-      const parsed = JSON.parse(text.slice(i, j + 1));
-      return { reply: String(parsed.reply || ''), actions: Array.isArray(parsed.actions) ? parsed.actions : [] };
-    } catch (e) {
-      return { reply: text.trim(), actions: [] };
-    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Servidor ${res.status}`);
+    return { reply: String(data.reply || ''), actions: Array.isArray(data.actions) ? data.actions : [] };
   }
 
   // ---------- Chat ----------
@@ -481,14 +434,14 @@ Regras:
     addMsg('user', text);
     $('#suggestions').style.display = 'none';
     let result;
-    if (S.settings.apiKey) {
+    if (serverUrl()) {
       const typing = drawMsg({ role: 'bot', text: 'Zeny está pensando…' });
       typing.classList.add('typing');
       try {
-        result = await askClaude(text);
+        result = await askServer(text);
       } catch (e) {
         console.error(e);
-        toast('IA indisponível, usando modo local');
+        toast((e.message || 'IA indisponível') + ' — usando modo local');
         result = localParse(text);
       }
       typing.remove();
@@ -502,18 +455,48 @@ Regras:
     busy = false;
   }
 
+  // No app Android (Capacitor) usamos plugins nativos; no navegador, a Web Speech API.
+  const native = () => window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+  const plugin = (name) => native() && window.Capacitor.Plugins && window.Capacitor.Plugins[name];
+
   function speak(text) {
-    if (!S.settings.speak || !text || !('speechSynthesis' in window)) return;
+    if (!S.settings.speak || !text) return;
+    const clean = text.replace(/[•\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, '');
+    const tts = plugin('TextToSpeech');
+    if (tts) { tts.stop().catch(() => {}).finally(() => tts.speak({ text: clean, lang: 'pt-BR', rate: 1.0 }).catch(() => {})); return; }
+    if (!('speechSynthesis' in window)) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[•\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, ''));
+    const u = new SpeechSynthesisUtterance(clean);
     u.lang = 'pt-BR';
     speechSynthesis.speak(u);
   }
 
   // ---------- Voz ----------
   function setupVoice() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const btn = $('#micBtn');
+    const nativeSR = plugin('SpeechRecognition');
+    if (nativeSR) {
+      let listening = false;
+      btn.addEventListener('click', async () => {
+        if (listening) { nativeSR.stop().catch(() => {}); return; }
+        try {
+          const { available } = await nativeSR.available();
+          if (!available) { toast('Reconhecimento de voz indisponível neste aparelho'); return; }
+          const perm = await nativeSR.requestPermissions();
+          if (perm && perm.speechRecognition && perm.speechRecognition !== 'granted') { toast('Permita o uso do microfone'); return; }
+          listening = true; btn.classList.add('rec');
+          const { matches } = await nativeSR.start({ language: 'pt-BR', maxResults: 1, partialResults: false, popup: false, prompt: 'Fale com o Zeny' });
+          if (matches && matches[0]) handleUser(matches[0]);
+        } catch (e) {
+          if (!/no match|cancel/i.test(String(e && e.message))) toast('Não consegui ouvir. Tente de novo.');
+        } finally {
+          listening = false; btn.classList.remove('rec');
+        }
+      });
+      return;
+    }
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       btn.addEventListener('click', () => toast('Seu navegador não suporta voz. Tente o Chrome.'));
       return;
@@ -717,8 +700,7 @@ Regras:
     };
 
     $('#saveSettings').onclick = () => {
-      S.settings.apiKey = $('#apiKey').value.trim();
-      S.settings.model = $('#model').value;
+      S.settings.serverUrl = $('#serverUrl').value.trim();
       S.settings.speak = $('#speak').checked;
       S.settings.userName = $('#userName').value.trim();
       save(); updateMode();
@@ -726,7 +708,7 @@ Regras:
       go('chat');
     };
     $('#exportData').onclick = () => {
-      const copy = { ...S, settings: { ...S.settings, apiKey: '' } };
+      const copy = { ...S };
       const blob = new Blob([JSON.stringify(copy, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -739,9 +721,9 @@ Regras:
       if (!f) return;
       try {
         const data = JSON.parse(await f.text());
-        const key = S.settings.apiKey;
+        const settings = S.settings;
         S = Object.assign(defaults(), data);
-        if (!S.settings.apiKey) S.settings.apiKey = key;
+        S.settings = Object.assign({}, settings, data.settings, { serverUrl: settings.serverUrl });
         save(); renderChat(); renderAll(); updateMode();
         toast('Backup importado');
       } catch (err) { toast('Arquivo inválido'); }
@@ -757,15 +739,14 @@ Regras:
   }
 
   function loadSettingsForm() {
-    $('#apiKey').value = S.settings.apiKey;
-    $('#model').value = S.settings.model;
+    $('#serverUrl').value = S.settings.serverUrl || serverUrl();
     $('#speak').checked = S.settings.speak;
     $('#userName').value = S.settings.userName;
   }
   function updateMode() {
     const el = $('#modeLabel');
-    el.textContent = S.settings.apiKey ? 'IA conectada' : 'Modo local';
-    el.classList.toggle('ai', !!S.settings.apiKey);
+    el.textContent = serverUrl() ? 'IA conectada' : 'Modo local';
+    el.classList.toggle('ai', !!serverUrl());
   }
 
   function welcome() {
@@ -795,7 +776,7 @@ Regras:
   welcome();
   if (S.chat.length > 1) $('#suggestions').style.display = 'none';
 
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  if ('serviceWorker' in navigator && location.protocol !== 'file:' && !native()) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 

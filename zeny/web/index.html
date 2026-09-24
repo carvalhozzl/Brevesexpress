@@ -89,16 +89,9 @@
       <!-- AJUSTES -->
       <section id="view-settings" class="view">
         <h3>Inteligência artificial</h3>
-        <p class="muted">Sem chave, o Zeny entende comandos comuns em português no próprio aparelho. Com uma chave da API do Claude (Anthropic), ele conversa livremente e entende frases complexas.</p>
-        <label class="field">Chave da API Anthropic
-          <input id="apiKey" type="password" placeholder="sk-ant-...">
-        </label>
-        <label class="field">Modelo
-          <select id="model">
-            <option value="claude-sonnet-5">Claude Sonnet 5 (recomendado)</option>
-            <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (mais rápido)</option>
-            <option value="claude-opus-5-5">Claude Opus 5.5 (mais inteligente)</option>
-          </select>
+        <p class="muted">Conectado ao servidor do Zeny, ele conversa livremente usando o Claude. Sem servidor, entende comandos comuns em português direto no aparelho.</p>
+        <label class="field">Servidor da IA
+          <input id="serverUrl" type="url" placeholder="https://zeny-server.seu-usuario.workers.dev">
         </label>
         <label class="check"><input type="checkbox" id="speak"> Zeny responde em voz alta</label>
         <label class="field">Seu nome
@@ -126,6 +119,7 @@
   <dialog id="modal"><form method="dialog" id="modalForm"></form></dialog>
   <div id="toast" class="toast"></div>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
