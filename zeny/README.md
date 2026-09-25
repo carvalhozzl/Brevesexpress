@@ -50,7 +50,7 @@ Sem servidor configurado, o Zeny funciona no **modo local**. Ele entende comando
 
 1. No repositório, abra **Settings → Pages** e, em *Source*, escolha **GitHub Actions**.
 2. Faça qualquer envio para a branch `main` (ou rode o workflow *Publicar site* em **Actions**).
-3. O site fica em `https://carvalhozzl.github.io/zeny/`.
+3. O site fica em `https://carvalhozzl.github.io/zeny.github.io/`.
 
 ### 2. Servidor da IA (Cloudflare, plano gratuito)
 
@@ -103,7 +103,7 @@ Cada envio para a `main` gera o app automaticamente em **Actions → App Android
 
 #### Rodar o Android no computador
 
-Precisa do Node 22, do Java 21 e do Android Studio.
+Precisa do Node 22, do Java 21 e do Android Studio (Capacitor 8).
 
 ```bash
 npm install
