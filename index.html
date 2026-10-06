@@ -393,7 +393,7 @@
   .ch-name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: .95rem; }
   .ch-status { font-size: .75rem; opacity: .8; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
   .ch-dot { width: 7px; height: 7px; background: var(--g200); border-radius: 50%; }
-  .chat-body { padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+  .chat-body { padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
   .msg { max-width: 78%; padding: 10px 14px; border-radius: 14px; font-size: .84rem; line-height: 1.5; }
   .msg.agent { background: var(--gray100); color: var(--gray900); border-radius: 4px 14px 14px 14px; }
   .msg.user-msg { background: var(--g500); color: white; align-self: flex-end; border-radius: 14px 4px 14px 14px; }
@@ -960,7 +960,7 @@ function calcularFrete() {
   setTimeout(() => {
     btn.disabled = false; txt.textContent = 'Calcular Frete'; spin.style.display = 'none';
 
-    const base = peso * 4.5 + Math.random() * 20 + 15;
+    const base = peso * 4.5 + 25; // mesma fórmula do assistente (netlify/functions/assistente.mjs)
     const services = [
       { id:'eco', icon:'🟢', cls:'eco', nome:'Econômico', mult:1, eta:'5–7 dias úteis' },
       { id:'exp', icon:'🟡', cls:'exp', nome:'Expresso', mult:1.8, eta:'1–2 dias úteis' },
@@ -1030,18 +1030,50 @@ function toggleChat() {
   document.getElementById('chat-icon').textContent = p.classList.contains('open') ? '✕' : '💬';
 }
 
-function sendChat() {
+const chatHistory = [];
+let chatBusy = false;
+
+function escapeHtml(t) {
+  return t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function addChatMsg(text, cls) {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return div;
+}
+
+async function sendChat() {
   const input = document.getElementById('chat-in');
   const msg = input.value.trim();
-  if (!msg) return;
-  const body = document.getElementById('chat-body');
-  body.innerHTML += `<div class="msg user-msg">${msg}</div>`;
+  if (!msg || chatBusy) return;
+  chatBusy = true;
   input.value = '';
-  body.scrollTop = body.scrollHeight;
-  setTimeout(() => {
-    body.innerHTML += `<div class="msg agent">Entendido! Um de nossos atendentes entrará em contato em breve. Ou fale pelo WhatsApp para resposta imediata. 🚀</div>`;
-    body.scrollTop = body.scrollHeight;
-  }, 800);
+  addChatMsg(msg, 'user-msg');
+  chatHistory.push({ role: 'user', content: msg });
+  const typing = addChatMsg('Digitando…', 'agent');
+
+  let reply;
+  try {
+    const res = await fetch('/api/assistente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+    const data = await res.json();
+    reply = data.reply || data.error;
+    if (data.reply) chatHistory.push({ role: 'assistant', content: data.reply });
+    else chatHistory.pop();
+  } catch (e) {
+    chatHistory.pop();
+  }
+  typing.remove();
+  addChatMsg(reply || 'Não consegui responder agora. Fale com a gente pelo WhatsApp para resposta imediata. 🚀', 'agent');
+  chatBusy = false;
 }
 
 function chatEnter(e) { if (e.key === 'Enter') sendChat(); }
