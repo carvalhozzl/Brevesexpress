@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGA · Faculdade do Bug Infinito</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================ LOGIN ============================ -->
+<section id="tela-login" class="login" hidden>
+  <form id="form-login" class="login-card" autocomplete="on">
+    <div class="marca"><span class="marca-icone">FBI</span><div><strong>SGA</strong><small>Sistema de Gestão Acadêmica</small></div></div>
+    <h1>Entrar</h1>
+    <label>Login<input name="login" required autofocus autocomplete="username"></label>
+    <label>Senha<input name="senha" type="password" required autocomplete="current-password"></label>
+    <p id="login-erro" class="erro" role="alert"></p>
+    <button type="submit" class="btn primario">Acessar</button>
+    <p class="dica">Usuários de exemplo: <code>ana.coord</code> (Coordenador) e <code>beatriz.sec</code> (Secretário) — senha <code>fbi@2026</code></p>
+  </form>
+</section>
+
+<!-- ============================ APLICAÇÃO ============================ -->
+<div id="tela-app" class="app" hidden>
+  <aside class="menu">
+    <div class="marca"><span class="marca-icone">FBI</span><div><strong>SGA</strong><small>Faculdade do Bug Infinito</small></div></div>
+    <nav id="menu"></nav>
+    <div class="usuario">
+      <div><strong id="usuario-nome"></strong><small id="usuario-perfil"></small></div>
+      <button id="btn-sair" class="btn">Sair</button>
+    </div>
+  </aside>
+  <main>
+    <header class="topo">
+      <button id="btn-menu" class="btn icone" aria-label="Abrir menu">☰</button>
+      <h2 id="titulo"></h2>
+      <div id="acoes-topo"></div>
+    </header>
+    <div id="conteudo"></div>
+  </main>
+</div>
+
+<!-- ============================ MODAL ============================ -->
+<dialog id="modal">
+  <form id="modal-form" method="dialog">
+    <h3 id="modal-titulo"></h3>
+    <div id="modal-campos" class="campos"></div>
+    <p id="modal-erro" class="erro" role="alert"></p>
+    <div class="modal-acoes">
+      <button type="button" class="btn" id="modal-cancelar">Cancelar</button>
+      <button type="submit" class="btn primario" id="modal-salvar">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
