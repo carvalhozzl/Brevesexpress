@@ -132,6 +132,18 @@ async function abrirFormulario(titulo, campos, dados, aoSalvar) {
 }
 $('#modal-cancelar').onclick = () => $('#modal').close();
 
+// Confirmação dentro da página (substitui o confirm() do navegador)
+function confirmar(mensagem, textoBotao = 'Confirmar') {
+  const dialogo = $('#confirmacao');
+  $('#confirmacao-texto').textContent = mensagem;
+  $('#confirmacao-ok').textContent = textoBotao;
+  dialogo.returnValue = '';
+  dialogo.showModal();
+  return new Promise((resolve) => {
+    dialogo.onclose = () => resolve(dialogo.returnValue === 'ok');
+  });
+}
+
 // ------------------------------ Tela CRUD genérica ------------------------------
 function telaCrud(cfg) {
   return async (conteudo, acoesTopo) => {
@@ -167,7 +179,7 @@ function telaCrud(cfg) {
       const acoes = podeEscrever || cfg.acoesExtras ? (l) => [
         ...(cfg.acoesExtras ? cfg.acoesExtras(l) : []),
         ...(podeEscrever && cfg.campos ? [`<button class="btn pequeno" data-acao="editar" data-id="${l[cfg.id]}">Editar</button>`] : []),
-        ...(podeEscrever ? [`<button class="btn pequeno perigo" data-acao="excluir" data-id="${l[cfg.id]}">${cfg.textoExcluir || 'Excluir'}</button>`] : []),
+        ...(podeEscrever ? [`<button class="btn pequeno perigo" data-acao="excluir" data-id="${l[cfg.id]}">Excluir</button>`] : []),
       ].join('') : null;
       const lista = conteudo.querySelector('#lista');
       lista.innerHTML = tabela(cfg.colunas, visiveis, acoes) + `<p class="contagem">${visiveis.length} de ${linhas.length} registro(s)</p>`;
@@ -187,7 +199,7 @@ function telaCrud(cfg) {
         });
       } else if (tipo === 'excluir') {
         const nome = registro[cfg.rotulo] ?? id;
-        if (!confirm(`${cfg.textoExcluir || 'Excluir'} ${cfg.singular.toLowerCase()} "${nome}"?`)) return;
+        if (!await confirmar(`Excluir ${cfg.singular.toLowerCase()} "${nome}"?`, 'Excluir')) return;
         try {
           await api('DELETE', `/api/${cfg.endpoint}/${id}`);
           toast(`${cfg.singular}: operação realizada com sucesso.`);
@@ -364,7 +376,7 @@ function telaMatriculas() {
     ];
     cfgSemNovo.aoAcao = async (tipo, m, recarregar) => {
       if (tipo !== 'cancelar') return CRUD.matriculas.aoAcao(tipo, m, recarregar);
-      if (!confirm(`Cancelar a matrícula de ${m.aluno} em ${m.disciplina}?`)) return;
+      if (!await confirmar(`Cancelar a matrícula de ${m.aluno} em ${m.disciplina}?`, 'Cancelar matrícula')) return;
       try {
         await api('DELETE', `/api/matriculas/${m.id_matricula}`);
         toast('Matrícula cancelada.');
@@ -398,7 +410,7 @@ async function telaPreRequisitos(conteudo, acoesTopo) {
     ], linhas, (l) => `<button class="btn pequeno perigo" data-d="${l.id_disciplina}" data-r="${l.id_disciplina_requisito}">Excluir</button>`);
     conteudo.querySelectorAll('button[data-d]').forEach((b) => {
       b.onclick = async () => {
-        if (!confirm('Excluir este pré-requisito?')) return;
+        if (!await confirmar('Excluir este pré-requisito?', 'Excluir')) return;
         try {
           await api('DELETE', `/api/prerequisitos/${b.dataset.d}/${b.dataset.r}`);
           toast('Pré-requisito excluído.');
@@ -490,7 +502,7 @@ async function telaFecharSemestre(conteudo) {
   form.onsubmit = async (ev) => {
     ev.preventDefault();
     const semestre = form.semestre.value;
-    if (!confirm(`Encerrar todas as turmas abertas de ${semestre}? Esta operação não pode ser desfeita.`)) return;
+    if (!await confirmar(`Encerrar todas as turmas abertas de ${semestre}? Esta operação não pode ser desfeita.`, 'Fechar semestre')) return;
     try {
       const r = await api('POST', '/api/semestre/fechar', { semestre });
       toast(`Semestre ${r.semestre} fechado: ${r.turmas_encerradas} turma(s) encerrada(s), ${r.matriculas_finalizadas_automaticamente} matrícula(s) finalizada(s).`);
