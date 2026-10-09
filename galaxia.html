@@ -39,6 +39,8 @@
   header { position: fixed; top: 22px; left: 26px; z-index: 10; pointer-events: none; }
   header h1 { font-family: 'Sora', sans-serif; font-weight: 800; font-size: clamp(20px, 3vw, 34px); letter-spacing: .02em; background: linear-gradient(90deg, #ffffff, #9cc4ff 50%, #ffbf73); -webkit-background-clip: text; background-clip: text; color: transparent; }
   header p { margin-top: 4px; font-size: 13px; color: var(--muted); letter-spacing: .08em; }
+  header .credit { display: inline-block; margin-top: 10px; padding: 5px 12px; font-size: 12px; letter-spacing: .1em; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  header .credit b { font-family: 'Sora', sans-serif; font-weight: 700; background: linear-gradient(90deg, #ff9ad5, #9cc4ff, #ffbf73); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
   /* Controls */
   #controls { position: fixed; top: 22px; right: 22px; z-index: 10; display: flex; gap: 10px; align-items: center; padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
@@ -116,6 +118,7 @@
 <header>
   <h1>Via Láctea · Sistema Solar</h1>
   <p>Explore o Sol, os planetas, as luas e as estrelas</p>
+  <div class="credit">✦ Criado por <b>Dani</b></div>
 </header>
 
 <div id="controls">
