@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Protótipo do Portal da Terceira Idade: conecta pessoas aposentadas a ONGs locais para doar tempo e conhecimento.">
+<title>Portal da Terceira Idade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@600;700;800&display=swap">
+<style>
+/* Layout: portal institucional — barra de acessibilidade, cabeçalho branco com menu sublinhado, faixa de destaque escura na home, conteúdo em até 1200px, rodapé em colunas; notas de IHC numa gaveta lateral */
+:root{
+  --bg:#F4F6F5; --band:#EBF0EE; --surface:#FFFFFF; --ink:#0F1E19; --muted:#4A5853; --line:#D5DED9; --line-strong:#9AAAA3;
+  --accent:#0A5C4A; --accent-hover:#08483A; --accent-ink:#FFFFFF; --accent-soft:#E4F1EC;
+  --deep:#0B2B23; --deep-2:#103A2F; --deep-ink:#F1F6F4; --deep-muted:#B3C9C1;
+  --sun:#F2B30C; --sun-ink:#231900; --warn-bg:#FFF2D6; --warn-ink:#6E3D00; --danger:#B3261E;
+  --shadow:0 1px 2px rgba(15,30,25,.06), 0 6px 18px -6px rgba(15,30,25,.12);
+  --shadow-lg:0 2px 4px rgba(15,30,25,.06), 0 18px 40px -16px rgba(15,30,25,.28);
+  --r:10px; --r-lg:14px;
+  --f-display:"Public Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1613; --band:#131D19; --surface:#17221E; --ink:#ECF2EE; --muted:#AEBDB5; --line:#2C3B35; --line-strong:#5B6E66;
+  --accent:#5FCCAB; --accent-hover:#7ADBBD; --accent-ink:#05251C; --accent-soft:#183329;
+  --deep:#08130F; --deep-2:#0E1E18; --deep-ink:#E6EFEA; --deep-muted:#9DB3AA;
+  --sun:#FFC83D; --sun-ink:#231900; --warn-bg:#3A2A0C; --warn-ink:#FFD891; --danger:#FF8A80;
+  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 18px 40px -16px rgba(0,0,0,.6);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1613; --band:#131D19; --surface:#17221E; --ink:#ECF2EE; --muted:#AEBDB5; --line:#2C3B35; --line-strong:#5B6E66;
+  --accent:#5FCCAB; --accent-hover:#7ADBBD; --accent-ink:#05251C; --accent-soft:#183329;
+  --deep:#08130F; --deep-2:#0E1E18; --deep-ink:#E6EFEA; --deep-muted:#9DB3AA;
+  --sun:#FFC83D; --sun-ink:#231900; --warn-bg:#3A2A0C; --warn-ink:#FFD891; --danger:#FF8A80;
+  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 18px 40px -16px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+.site[data-contrast="high"]{
+  --bg:#000; --band:#000; --surface:#000; --ink:#FFF; --muted:#F2F2F2; --line:#FFF; --line-strong:#FFF;
+  --accent:#FFD400; --accent-hover:#FFE14D; --accent-ink:#000; --accent-soft:#1A1A1A;
+  --deep:#000; --deep-2:#000; --deep-ink:#FFF; --deep-muted:#F2F2F2;
+  --warn-bg:#000; --warn-ink:#FFD400; --danger:#FF9C94; --shadow:none; --shadow-lg:none; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); line-height:1.55}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:30; background:var(--deep)}
+button{font:inherit; color:inherit}
+:focus-visible{outline:4px solid var(--sun); outline-offset:3px}
+svg.i{width:1.2em; height:1.2em; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+.site{--fs:20px; font-size:var(--fs); min-height:100vh; background:var(--bg); color:var(--ink); display:flex; flex-direction:column}
+.wrap{max-width:1200px; margin-inline:auto; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); width:100%}
+.skip{position:absolute; left:-9999px}
+.skip:focus{left:16px; top:16px; z-index:50; background:var(--sun); color:var(--sun-ink); padding:12px 16px; border-radius:var(--r); font-weight:700}
+
+/* barra de acessibilidade */
+.a11y{background:var(--deep); color:var(--deep-ink); font-size:.68em; border-bottom:1px solid rgba(255,255,255,.08)}
+.a11y .wrap{display:flex; flex-wrap:wrap; align-items:center; gap:8px 20px; padding-block:6px}
+.a11y .grp{display:flex; align-items:center; gap:6px}
+.a11y .lb{font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--deep-muted)}
+.a11y button{min-height:44px; min-width:44px; padding:0 12px; border-radius:8px; border:1.5px solid rgba(255,255,255,.35); background:transparent; color:inherit; font-weight:700; cursor:pointer}
+.a11y button:hover{border-color:var(--deep-ink)}
+.a11y button[aria-pressed="true"]{background:var(--sun); color:var(--sun-ink); border-color:var(--sun)}
+.site[data-contrast="high"] .a11y button{border-color:#fff}
+
+/* cabeçalho */
+.head{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--surface); box-shadow:0 1px 0 var(--line), 0 8px 24px -18px rgba(0,0,0,.35)}
+.head .bar1{display:flex; align-items:center; gap:20px; padding-block:14px}
+.logo{display:flex; align-items:center; gap:14px; border:0; background:transparent; cursor:pointer; padding:4px; text-align:left; flex:1; min-width:0}
+.logo svg.mark{width:52px; height:52px; flex:none}
+.logo .wm{display:flex; flex-direction:column; gap:3px; padding-left:14px; border-left:1.5px solid var(--line); min-width:0}
+.logo b{font-family:var(--f-display); font-weight:800; font-size:1.12em; line-height:1.1; letter-spacing:-.01em}
+.logo small{font-size:.62em; color:var(--muted); font-weight:700; letter-spacing:.1em; text-transform:uppercase}
+.me{display:inline-flex; align-items:center; gap:10px; min-height:56px; padding:0 16px 0 6px; border-radius:30px; border:1.5px solid var(--line-strong); background:var(--surface); font-size:.78em; cursor:pointer}
+.me:hover{border-color:var(--accent)}
+.me .av{width:42px; height:42px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; font-family:var(--f-display); font-weight:800}
+.me .nm{display:flex; flex-direction:column; text-align:left; line-height:1.2}
+.me .nm small{font-size:.85em; color:var(--muted)}
+.me[aria-current="page"]{border-color:var(--accent); background:var(--accent-soft)}
+.nav{border-top:1px solid var(--line)}
+.nav .wrap{display:grid; grid-template-columns:repeat(5,minmax(0,1fr))}
+.nav button{position:relative; display:flex; align-items:center; justify-content:center; gap:10px; min-height:62px; padding:8px 10px; border:0; border-bottom:3px solid transparent; border-radius:0; background:transparent; font-family:var(--f-display); font-weight:700; font-size:.74em; line-height:1.2; text-align:center; cursor:pointer; color:var(--muted)}
+.nav button svg.i{width:1.4em; height:1.4em}
+.nav button:hover{color:var(--ink); background:var(--band)}
+.nav button[aria-current="page"]{color:var(--accent); border-bottom-color:var(--accent)}
+.site[data-contrast="high"] .nav button[aria-current="page"]{color:var(--accent)}
+.badge{min-width:24px; height:24px; padding:0 7px; border-radius:12px; background:var(--danger); color:#fff; font-size:.8em; display:grid; place-items:center; font-family:var(--f-body)}
+.site[data-contrast="high"] .badge{color:#000}
+
+main{flex:1; padding-block:0 72px}
+main > .wrap{padding-top:32px}
+.crumbs{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:26px; font-size:.8em}
+.crumbs ol{display:flex; flex-wrap:wrap; gap:6px; list-style:none; margin:0; padding:0; color:var(--muted)}
+.crumbs li+li::before{content:"/"; margin-right:6px; color:var(--line-strong)}
+.crumbs [aria-current]{color:var(--ink); font-weight:700}
+.backbtn{display:inline-flex; align-items:center; gap:6px; min-height:48px; padding:0 16px; border-radius:var(--r); border:1.5px solid var(--line-strong); background:var(--surface); font-weight:700; cursor:pointer}
+.backbtn:hover{border-color:var(--accent)}
+
+/* tipografia */
+.h1{font-family:var(--f-display); font-weight:800; font-size:1.9em; line-height:1.12; letter-spacing:-.02em; margin:0; text-wrap:balance}
+.h2{font-family:var(--f-display); font-weight:700; font-size:1.25em; line-height:1.25; letter-spacing:-.01em; margin:0; text-wrap:balance}
+.h3{font-family:var(--f-display); font-weight:700; font-size:1.02em; margin:0}
+p{margin:0}
+.muted{color:var(--muted)}
+.lead{font-size:1.08em; max-width:36em}
+.stack{display:flex; flex-direction:column; gap:12px; min-width:0}
+.stack-lg{display:flex; flex-direction:column; gap:22px; min-width:0}
+.section{display:flex; flex-direction:column; gap:20px; margin-top:52px}
+.sec-head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px 24px; padding-bottom:14px; border-bottom:1px solid var(--line)}
+.tag{display:inline-flex; align-self:flex-start; align-items:center; gap:6px; font-size:.68em; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent)}
+.sec-t{font-size:.7em; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:var(--muted)}
+.pin{display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--sun); color:var(--sun-ink); font:700 14px/1 var(--f-body); vertical-align:middle; margin-left:6px; box-shadow:0 0 0 3px var(--surface); flex:none; letter-spacing:0; text-transform:none}
+
+/* faixa de destaque da home */
+.band-hero{background:var(--deep); color:var(--deep-ink); background-image:radial-gradient(120% 140% at 100% 0%, var(--deep-2) 0%, var(--deep) 60%)}
+.band-hero .wrap{padding-block:48px 52px}
+.hero{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:40px; align-items:center}
+.welcome{display:flex; flex-direction:column; gap:16px}
+.welcome .sec-t{color:var(--deep-muted)}
+.welcome .h1{font-size:2.4em; color:var(--deep-ink)}
+.welcome .lead{color:var(--deep-muted)}
+.welcome .lead b{color:var(--deep-ink)}
+.band-hero .next{background:var(--surface); color:var(--ink); box-shadow:var(--shadow-lg); border:0}
+.site[data-contrast="high"] .band-hero .next{border:2px solid var(--line)}
+
+/* grades */
+.split{display:grid; grid-template-columns:320px minmax(0,1fr); gap:32px; align-items:start}
+.detail{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:40px; align-items:start}
+.two{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:32px; align-items:start}
+.narrow{max-width:760px; margin-inline:auto; display:flex; flex-direction:column; gap:22px}
+.sticky{position:sticky; top:170px}
+.grid-actions{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px}
+.grid-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:20px}
+
+/* botões */
+.btn{display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:max(60px,3em); padding:10px 24px; border-radius:var(--r); border:2px solid var(--accent); background:var(--accent); color:var(--accent-ink); font-family:var(--f-display); font-weight:700; font-size:.92em; cursor:pointer; text-align:center}
+.btn:hover{background:var(--accent-hover); border-color:var(--accent-hover)}
+.btn.auto{width:auto; align-self:flex-start}
+.btn.sec{background:var(--surface); color:var(--ink); border-color:var(--line-strong)}
+.btn.sec:hover{border-color:var(--accent); color:var(--accent)}
+.btn.quiet{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn.quiet:hover{border-color:var(--line-strong)}
+.btn.danger{background:transparent; color:var(--danger); border-color:var(--danger)}
+.btn.sun{background:var(--sun); color:var(--sun-ink); border-color:var(--sun)}
+.btn.sun:hover{filter:brightness(1.05)}
+.btn.ghost{background:transparent; color:var(--deep-ink); border-color:rgba(255,255,255,.45)}
+.btn.ghost:hover{border-color:var(--deep-ink)}
+.site[data-contrast="high"] .btn.ghost{border-color:#fff}
+.btn:active{transform:translateY(1px)}
+.btn-row{display:flex; flex-wrap:wrap; gap:12px}
+.btn-row .btn{width:auto; flex:1 1 220px}
+.btn-row.left .btn{flex:0 1 auto}
+.lnk{display:inline-flex; align-items:center; gap:6px; min-height:48px; padding:0 4px; border:0; background:transparent; color:var(--accent); font-family:var(--f-display); font-weight:700; font-size:.85em; cursor:pointer; text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:2px}
+
+.action{display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; width:100%; min-height:100px; padding:18px; text-align:left; border-radius:var(--r-lg); border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--shadow); cursor:pointer; transition:border-color .15s, transform .15s}
+.action:hover{border-color:var(--accent); transform:translateY(-2px)}
+.action .ic{width:52px; height:52px; border-radius:var(--r); display:grid; place-items:center; background:var(--accent-soft); color:var(--accent)}
+.site[data-contrast="high"] .action .ic{border:2px solid var(--line)}
+.action .ic svg.i{width:1.4em; height:1.4em}
+.action b{display:block; font-family:var(--f-display); font-size:.95em}
+.action .s{display:block; font-size:.78em; color:var(--muted)}
+.action > svg.i{color:var(--muted)}
+.count{min-width:32px; height:32px; padding:0 10px; border-radius:16px; background:var(--danger); color:#fff; font-weight:700; display:grid; place-items:center; font-size:.8em}
+
+.next{padding:24px; border-radius:var(--r-lg); background:var(--accent-soft); display:flex; flex-direction:column; gap:12px; border:1.5px solid transparent}
+.site[data-contrast="high"] .next{border-color:var(--line)}
+.next .when{font-family:var(--f-display); font-weight:800; font-size:1.15em; letter-spacing:-.01em}
+.facts{display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none}
+.facts li{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start}
+.facts svg.i{margin-top:.15em; color:var(--accent)}
+.impact{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); border:1.5px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow); overflow:hidden}
+.impact div{padding:20px 22px; border-left:1.5px solid var(--line); margin-left:-1.5px}
+.impact b{display:block; font-family:var(--f-display); font-weight:800; font-size:1.8em; line-height:1.1; letter-spacing:-.02em; color:var(--accent); font-variant-numeric:tabular-nums}
+.impact span{font-size:.78em; color:var(--muted)}
+
+/* chips e interruptores */
+.chips{display:flex; flex-wrap:wrap; gap:10px}
+.chip{display:inline-flex; align-items:center; gap:8px; min-height:max(54px,2.7em); padding:0 18px; border-radius:999px; border:1.5px solid var(--line-strong); background:var(--surface); font-weight:700; font-size:.86em; cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.seg{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.seg .chip{justify-content:center; padding:0 8px; border-radius:var(--r)}
+.switch{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px; align-items:center; width:100%; min-height:84px; padding:14px 18px; border:1.5px solid var(--line-strong); border-radius:var(--r-lg); background:var(--surface); text-align:left; cursor:pointer}
+.switch:hover{border-color:var(--accent)}
+.switch b{display:block}
+.switch .s{display:block; font-size:.8em; color:var(--muted)}
+.switch .st{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:.68em; font-weight:700}
+.track{width:62px; height:34px; border-radius:17px; background:var(--line-strong); position:relative; transition:background .2s}
+.track::after{content:""; position:absolute; top:4px; left:4px; width:26px; height:26px; border-radius:50%; background:var(--surface); transition:left .2s}
+.switch[aria-checked="true"] .track{background:var(--accent)}
+.switch[aria-checked="true"] .track::after{left:32px; background:var(--accent-ink)}
+
+.filters{display:flex; flex-direction:column; gap:22px; padding:22px; border-radius:var(--r-lg); background:var(--surface); border:1.5px solid var(--line); box-shadow:var(--shadow)}
+.filters .ft{font-family:var(--f-display); font-weight:800; font-size:1em; padding-bottom:12px; border-bottom:1px solid var(--line)}
+
+/* cartões de atividade */
+.opp{display:flex; flex-direction:column; gap:10px; width:100%; height:100%; padding:22px; border-radius:var(--r-lg); border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--shadow); text-align:left; cursor:pointer; transition:border-color .15s, transform .15s}
+.opp:hover{border-color:var(--accent); transform:translateY(-2px)}
+.opp .t{font-family:var(--f-display); font-weight:700; font-size:1.05em; line-height:1.25; letter-spacing:-.01em}
+.opp .o{color:var(--muted); font-size:.85em}
+.opp .row{display:flex; flex-direction:column; gap:4px; font-size:.84em}
+.opp .row span{display:inline-flex; align-items:center; gap:6px}
+.opp .more{margin-top:auto; padding-top:12px; border-top:1px solid var(--line)}
+.match{display:flex; align-items:center; gap:8px; font-size:.82em; font-weight:700; color:var(--accent)}
+.seals{display:flex; flex-wrap:wrap; gap:6px}
+.seal{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:6px; font-size:.72em; font-weight:700; background:var(--accent-soft); color:var(--ink)}
+.seal.warn{background:var(--warn-bg); color:var(--warn-ink)}
+.site[data-contrast="high"] .seal{border:1.5px solid var(--line)}
+.more{display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:var(--f-display); font-weight:700; font-size:.84em; color:var(--accent)}
+
+.box{padding:18px 20px; border-radius:var(--r-lg); border:1.5px solid var(--line); display:flex; flex-direction:column; gap:8px; background:var(--surface)}
+.box.warn{background:var(--warn-bg); color:var(--warn-ink); border-color:transparent}
+.site[data-contrast="high"] .box.warn{border-color:var(--warn-ink)}
+.box.soft{background:var(--accent-soft); border-color:transparent}
+.box .h{display:flex; align-items:center; gap:8px; font-weight:700}
+.card{padding:24px; border-radius:var(--r-lg); border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--shadow); display:flex; flex-direction:column; gap:16px}
+
+.video{position:relative; aspect-ratio:16/9; max-width:100%; border-radius:var(--r-lg); overflow:hidden; background:linear-gradient(135deg,#2E5B4E,#0F2A23)}
+.video .scene{position:absolute; inset:0; display:grid; place-items:center}
+.video .play{width:84px; height:84px; border-radius:50%; background:rgba(255,255,255,.94); display:grid; place-items:center}
+.video .play svg.i{width:36px; height:36px; fill:#0B3D32; stroke:none}
+.video .cc{position:absolute; top:12px; left:12px; padding:4px 10px; border-radius:6px; background:#FFD400; color:#000; font-weight:700; font-size:.64em}
+.video .cap{position:absolute; left:14px; right:14px; bottom:14px; padding:10px 14px; border-radius:8px; background:rgba(0,0,0,.84); color:#fff; font-size:.88em; line-height:1.35; text-align:center}
+details.tr{border:1.5px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
+details.tr summary{min-height:64px; padding:0 20px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:700; cursor:pointer; list-style:none}
+details.tr summary::-webkit-details-marker{display:none}
+details.tr[open] summary .chev{transform:rotate(90deg)}
+details.tr .body{padding:0 20px 20px; display:flex; flex-direction:column; gap:8px; font-size:.9em}
+
+.steps{display:flex; flex-direction:column; gap:10px}
+.steps .bar{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+.steps .bar span{height:8px; border-radius:4px; background:var(--line)}
+.steps .bar span.on{background:var(--accent)}
+.steps .lbl{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; font-size:.76em; font-weight:700; color:var(--muted)}
+.steps .lbl span.on{color:var(--ink)}
+.radio{display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:center; width:100%; min-height:84px; padding:14px 18px; text-align:left; border-radius:var(--r-lg); border:1.5px solid var(--line-strong); background:var(--surface); cursor:pointer}
+.radio:hover{border-color:var(--accent)}
+.radio .dot{width:28px; height:28px; border-radius:50%; border:2.5px solid var(--muted); display:grid; place-items:center}
+.radio[aria-checked="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1.5px var(--accent); background:var(--accent-soft)}
+.radio[aria-checked="true"] .dot{border-color:var(--accent); background:var(--accent); color:var(--accent-ink)}
+.radio[aria-checked="true"] .dot svg.i{width:16px; height:16px; stroke-width:3.2}
+.radio b{display:block}
+.radio .s{display:block; font-size:.8em; color:var(--muted)}
+.radio[aria-disabled="true"]{cursor:not-allowed; background:transparent; border-style:dashed}
+.radio[aria-disabled="true"] b{color:var(--muted)}
+.radio .warnline{display:flex; gap:6px; align-items:flex-start; margin-top:4px; font-size:.78em; font-weight:700; color:var(--warn-ink)}
+.radios{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px}
+.err{display:flex; gap:8px; align-items:flex-start; padding:12px 16px; border-radius:var(--r); background:var(--warn-bg); color:var(--warn-ink); font-weight:700; font-size:.86em}
+.review{list-style:none; margin:0; padding:0; border:1.5px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow)}
+.review li{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; padding:16px 20px}
+.review li + li{border-top:1px solid var(--line)}
+.review .k{display:block; font-size:.7em; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700}
+.review .v{font-weight:700}
+.link{min-height:48px; padding:0 16px; border-radius:var(--r); border:1.5px solid var(--line-strong); background:transparent; font-weight:700; font-size:.8em; cursor:pointer}
+.done{display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px}
+.done .big{width:96px; height:96px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; box-shadow:0 0 0 10px var(--accent-soft)}
+.done .big svg.i{width:50px; height:50px; stroke-width:3}
+.confirm{display:flex; flex-direction:column; gap:10px; padding:18px; border-radius:var(--r-lg); border:2px solid var(--danger); background:var(--surface)}
+
+/* mensagens */
+.inbox{display:grid; grid-template-columns:320px minmax(0,1fr); border:1.5px solid var(--line); border-radius:var(--r-lg); overflow:hidden; background:var(--surface); box-shadow:var(--shadow)}
+.convs{display:flex; flex-direction:column; border-right:1.5px solid var(--line); background:var(--band)}
+.conv{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center; min-height:88px; padding:12px 16px; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; cursor:pointer}
+.conv:hover{background:var(--surface)}
+.conv[aria-current="true"]{background:var(--surface); box-shadow:inset 4px 0 0 var(--accent)}
+.conv .s{display:block; font-size:.76em; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.av{width:50px; height:50px; border-radius:50%; background:var(--sun); color:var(--sun-ink); display:grid; place-items:center; font-weight:700; flex:none}
+.pane{display:flex; flex-direction:column; gap:18px; padding:24px; min-width:0}
+.who{display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:center; padding-bottom:16px; border-bottom:1px solid var(--line)}
+.thread{display:flex; flex-direction:column; gap:12px; max-height:420px; overflow-y:auto; padding-right:4px}
+.msg{max-width:78%; padding:12px 16px; border-radius:14px; font-size:.94em; line-height:1.4}
+.msg time{display:block; font-size:.72em; margin-top:4px; opacity:.8}
+.msg.them{align-self:flex-start; background:var(--bg); border:1.5px solid var(--line); border-bottom-left-radius:4px}
+.msg.me{align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:4px}
+.daysep{align-self:center; font-size:.7em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.1em}
+.quick{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px}
+.quick .chip{border-radius:var(--r); justify-content:center; text-align:center; padding:8px 10px; line-height:1.2}
+.compose{display:flex; flex-direction:column; gap:10px}
+.compose textarea{width:100%; min-height:110px; padding:14px; border-radius:var(--r); border:1.5px solid var(--line-strong); background:var(--surface); color:var(--ink); font:inherit; resize:vertical}
+.compose .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.listening{display:flex; align-items:center; gap:12px; padding:14px; border-radius:var(--r); background:var(--accent-soft); font-weight:700}
+.wave{display:flex; gap:4px; align-items:center; height:24px}
+.wave i{width:5px; border-radius:3px; background:var(--accent); animation:w 1s ease-in-out infinite}
+.wave i:nth-child(1){height:10px}.wave i:nth-child(2){height:20px; animation-delay:.15s}.wave i:nth-child(3){height:14px; animation-delay:.3s}.wave i:nth-child(4){height:22px; animation-delay:.45s}
+@keyframes w{50%{transform:scaleY(.4)}}
+
+.sizer{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; padding:12px; border:1.5px solid var(--line-strong); border-radius:var(--r-lg); background:var(--surface)}
+.sizer button{width:62px; height:62px; border-radius:var(--r); border:1.5px solid var(--line-strong); background:transparent; font-family:var(--f-display); font-weight:800; cursor:pointer}
+.sizer button:hover{border-color:var(--accent)}
+.sizer .prev{text-align:center}
+.sizer .prev small{display:block; font-size:.7em; color:var(--muted); font-weight:700}
+.profile{display:grid; grid-template-columns:auto minmax(0,1fr); gap:18px; align-items:center}
+.profile .av{width:76px; height:76px; background:var(--accent); color:var(--accent-ink); font-family:var(--f-display); font-weight:800; font-size:1.15em}
+.preview-offer{padding:24px; border-radius:var(--r-lg); background:var(--deep); color:var(--deep-ink); display:flex; flex-direction:column; gap:12px; box-shadow:var(--shadow-lg)}
+.preview-offer .t{font-family:var(--f-display); font-weight:800; font-size:1.15em}
+.preview-offer .seal{background:rgba(255,255,255,.12); color:inherit}
+
+.site[data-contrast="high"] svg.mark rect{fill:#000; stroke:#fff; stroke-width:2}
+.site[data-contrast="high"] svg.mark circle:first-of-type{stroke:#fff}
+/* aviso visual, toast */
+.alert{position:fixed; z-index:40; top:calc(env(safe-area-inset-top,0px) + 14px); left:50%; transform:translateX(-50%); width:min(660px, calc(100% - 32px)); display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:12px; align-items:center; padding:14px 16px; border-radius:var(--r-lg); background:var(--sun); color:var(--sun-ink); box-shadow:var(--shadow-lg)}
+.alert svg.i{width:1.7em; height:1.7em}
+.alert button{min-height:54px; border-radius:var(--r); border:2px solid var(--sun-ink); font-weight:700; cursor:pointer; padding:0 14px}
+.alert .go{background:var(--sun-ink); color:var(--sun)}
+.alert .x{background:transparent; color:var(--sun-ink)}
+.flashframe{position:fixed; inset:0; z-index:39; pointer-events:none; border:0 solid var(--sun)}
+.flashframe.on{animation:flash 1.8s ease-in-out}
+@keyframes flash{0%,100%{border-width:0} 20%,60%{border-width:14px} 40%,80%{border-width:4px}}
+.toast{position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 28px); transform:translateX(-50%); padding:12px 18px; border-radius:var(--r); background:var(--ink); color:var(--bg); font-weight:700; font-size:.78em; z-index:45; max-width:calc(100% - 32px); text-align:center}
+
+/* rodapé */
+.foot{background:var(--deep); color:var(--deep-muted); font-size:.78em}
+.foot .cols{display:grid; grid-template-columns:minmax(0,1.6fr) repeat(3,minmax(0,1fr)); gap:32px; padding-block:48px 36px}
+.foot .brand{display:flex; flex-direction:column; gap:14px}
+.foot .brand .nm{display:flex; align-items:center; gap:12px; color:var(--deep-ink); font-family:var(--f-display); font-weight:800; font-size:1.15em}
+.foot .brand svg.mark{width:40px; height:40px}
+.foot h4{margin:0 0 12px; color:var(--deep-ink); font-family:var(--f-display); font-size:.82em; letter-spacing:.1em; text-transform:uppercase}
+.foot ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.foot li button{min-height:40px; padding:0; border:0; background:transparent; color:var(--deep-ink); text-align:left; cursor:pointer; text-decoration:underline; text-underline-offset:4px; text-decoration-color:rgba(255,255,255,.35)}
+.foot li span{display:inline-block; padding-block:8px}
+.foot .seal-a11y{display:inline-flex; align-self:flex-start; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; border:1.5px solid rgba(255,255,255,.3); color:var(--deep-ink); font-weight:700}
+.foot .bottom{border-top:1px solid rgba(255,255,255,.12)}
+.foot .bottom .wrap{display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; padding-block:18px calc(18px + env(safe-area-inset-bottom,0px))}
+
+/* gaveta de notas de IHC */
+.fab{position:fixed; z-index:35; right:max(20px, calc(env(safe-area-inset-right,0px) + 20px)); bottom:calc(env(safe-area-inset-bottom,0px) + 20px); display:inline-flex; align-items:center; gap:10px; min-height:56px; padding:0 20px; border-radius:28px; border:0; background:var(--sun); color:var(--sun-ink); font-weight:700; font-size:16px; cursor:pointer; box-shadow:var(--shadow-lg)}
+.drawer{position:fixed; z-index:36; top:0; right:0; bottom:0; width:min(430px, 100%); background:var(--surface); color:var(--ink); border-left:1.5px solid var(--line); box-shadow:-20px 0 40px -20px rgba(0,0,0,.4); overflow-y:auto; font-size:16px;
+  padding:calc(env(safe-area-inset-top,0px) + 22px) max(22px, calc(env(safe-area-inset-right,0px) + 22px)) calc(env(safe-area-inset-bottom,0px) + 28px) 22px; display:flex; flex-direction:column; gap:20px}
+.drawer .top{display:flex; justify-content:space-between; align-items:flex-start; gap:12px}
+.drawer h2{font-family:var(--f-display); font-weight:800; font-size:1.45rem; margin:0; line-height:1.1}
+.drawer .eyebrow{font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.drawer .close{min-width:48px; min-height:48px; border-radius:var(--r); border:1.5px solid var(--line-strong); background:transparent; cursor:pointer; display:grid; place-items:center}
+.persona{display:grid; grid-template-columns:auto 1fr; gap:12px; padding:14px; border:1.5px solid var(--line); border-radius:var(--r-lg); background:var(--bg)}
+.persona .av{width:46px; height:46px; background:var(--accent); color:var(--accent-ink); font-family:var(--f-display)}
+.persona ul{margin:6px 0 0; padding-left:18px; color:var(--muted); font-size:.9rem}
+.d-sec h3{font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 8px}
+.d-tools{display:flex; flex-wrap:wrap; gap:8px}
+.d-tools button{display:inline-flex; align-items:center; gap:8px; border:1.5px solid var(--line-strong); background:transparent; border-radius:8px; padding:9px 12px; font-weight:700; font-size:.88rem; cursor:pointer}
+.d-tools button[aria-pressed="true"]{background:var(--sun); color:var(--sun-ink); border-color:var(--sun)}
+.notes{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px}
+.notes li{display:grid; grid-template-columns:auto 1fr; gap:10px; font-size:.93rem}
+.notes .num{width:24px; height:24px; border-radius:50%; background:var(--sun); color:var(--sun-ink); font-weight:700; font-size:.8rem; display:grid; place-items:center; margin-top:1px}
+.notes b{display:block}
+.notes .ref{display:inline-block; margin-top:3px; font-size:.78rem; color:var(--muted)}
+
+/* animações ao passar o mouse */
+.btn,.chip,.switch,.radio,.link,.backbtn,.lnk,.me,.logo,.a11y button,.sizer button,.conv,.fab,.alert button,.d-tools button,.drawer .close,.foot li button,details.tr summary,.nav button{transition:transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, background-color .22s ease, border-color .22s ease, color .22s ease}
+.btn svg.i,.lnk svg.i,.backbtn svg.i,.action .ic,.action > svg.i,.opp .more svg.i,.fab svg.i,.me .av,.logo svg.mark,.nav button svg.i,details.tr summary .chev{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.btn{position:relative; overflow:hidden; isolation:isolate}
+.btn::after{content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,255,255,.38) 50%, transparent 75%); transform:translateX(-130%); transition:transform .7s ease; pointer-events:none}
+.btn:hover{transform:translateY(-3px); box-shadow:0 12px 24px -12px rgba(0,0,0,.45)}
+.btn:hover::after{transform:translateX(130%)}
+.btn:hover svg.i{transform:scale(1.15) rotate(-6deg)}
+.btn.sun:hover{box-shadow:0 14px 28px -12px var(--sun)}
+.btn.ghost:hover{background:rgba(255,255,255,.08)}
+.btn.sec:hover,.btn.quiet:hover{background:var(--accent-soft)}
+.btn.danger:hover{background:var(--danger); color:var(--surface)}
+.btn:active,.chip:active,.switch:active,.radio:active{transform:translateY(0) scale(.98); box-shadow:none}
+.chip:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+.switch:hover,.radio:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+.link:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.backbtn:hover{background:var(--accent-soft)}
+.backbtn:hover svg.i{transform:translateX(-4px)}
+.lnk:hover{text-underline-offset:7px}
+.lnk:hover svg.i{transform:translateX(5px)}
+.action:hover{box-shadow:var(--shadow-lg)}
+.action:hover .ic{transform:scale(1.1)}
+.action:hover > svg.i{transform:translateX(5px); color:var(--accent)}
+.opp:hover{box-shadow:var(--shadow-lg)}
+.opp:hover .more svg.i{transform:translateX(6px)}
+.nav button::after{content:""; position:absolute; left:18%; right:18%; bottom:-3px; height:3px; border-radius:2px; background:var(--accent); transform:scaleX(0); transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.nav button:hover::after{transform:scaleX(1)}
+.nav button[aria-current="page"]::after{display:none}
+.nav button:hover svg.i{transform:translateY(-2px) scale(1.1)}
+.me:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+.me:hover .av{transform:scale(1.08)}
+.logo:hover svg.mark{transform:rotate(-8deg) scale(1.05)}
+.a11y button:hover{transform:translateY(-1px); background:rgba(255,255,255,.08)}
+.a11y button[aria-pressed="true"]:hover{background:var(--sun)}
+.sizer button:hover{transform:scale(1.06); background:var(--accent-soft)}
+.fab:hover{transform:translateY(-3px); box-shadow:0 18px 32px -12px rgba(0,0,0,.5)}
+.fab:hover svg.i{transform:rotate(12deg) scale(1.15)}
+.alert button:hover{transform:translateY(-2px)}
+.d-tools button:hover,.drawer .close:hover{transform:translateY(-2px); border-color:var(--accent)}
+.foot li button:hover{color:var(--sun); text-decoration-color:var(--sun)}
+details.tr summary:hover{background:var(--band)}
+details.tr summary:hover .chev{transform:translateX(4px)}
+details.tr[open] summary:hover .chev{transform:rotate(90deg)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:.01ms !important}
+  .btn::after{display:none}
+  .btn:hover,.chip:hover,.switch:hover,.radio:hover,.me:hover,.fab:hover,.sizer button:hover,.a11y button:hover,.alert button:hover,.d-tools button:hover,.drawer .close:hover{transform:none}
+  .track,.track::after,.opp,.action{transition:none} .opp:hover,.action:hover{transform:none} .wave i{animation:none}
+  .flashframe.on{animation:none; border-width:10px}
+}
+@media (max-width:1100px){ .nav button{flex-direction:column; gap:4px; padding:8px 4px} }
+@media (max-width:1000px){
+  .hero,.split,.detail,.two{grid-template-columns:minmax(0,1fr)}
+  .sticky{position:static}
+  .inbox{grid-template-columns:minmax(0,1fr)}
+  .convs{border-right:0; border-bottom:1.5px solid var(--line)}
+  .foot .cols{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .foot .brand{grid-column:1 / -1}
+}
+@media (max-width:760px){
+  .head .bar1{gap:10px; padding-block:10px}
+  .logo svg.mark{width:44px; height:44px}
+  .logo .wm{padding-left:10px}
+  .logo b{font-size:1em}
+  .logo small{font-size:.55em}
+  .me{padding:0 6px}
+  .me .nm{display:none}
+  .nav button{gap:2px; min-height:62px; padding:6px 2px; font-size:.58em}
+  .nav button svg.i{width:1.7em; height:1.7em}
+  .nav .badge{position:absolute; top:4px; right:4px; min-width:22px; height:22px}
+  .band-hero .wrap{padding-block:32px 36px}
+  .welcome .h1{font-size:1.9em}
+  .h1{font-size:1.55em}
+  .alert{grid-template-columns:auto minmax(0,1fr)}
+  .msg{max-width:90%}
+  .fab{padding:0 16px}
+  .fab .lbl{display:none}
+  .pane{padding:16px}
+  .foot .cols{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+<style>body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+</head>
+<body>
+<div id="site" class="site"></div>
+
+<script>
+(function(){
+const P = {
+  home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  search:'M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14z M20 20l-4-4',
+  cal:'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M3 10h18 M8 3v4 M16 3v4',
+  chat:'M4 5h16v11H9l-5 4z M8 9h8 M8 12h5',
+  user:'M12 4a4 4 0 1 0 0 8a4 4 0 1 0 0-8z M4 21c0-4 4-6 8-6s8 2 8 6',
+  back:'M15 5l-7 7 7 7',
+  check:'M5 12l5 5 9-11',
+  loc:'M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z M12 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z',
+  clock:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M12 7v5l3 2',
+  mic:'M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5 11a7 7 0 0 0 14 0 M12 18v3',
+  send:'M4 12l16-8-6 16-3-7z',
+  book:'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z M5 17a3 3 0 0 1 3-3h11',
+  bell:'M6 16V11a6 6 0 0 1 12 0v5l2 2H4z M10 21h4',
+  alert:'M12 3l10 18H2z M12 10v5 M12 18v.01',
+  play:'M8 5l11 7-11 7z',
+  chev:'M9 5l7 7-7 7',
+  globe:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M3 12h18 M12 3c3 3 3 15 0 18 M12 3c-3 3-3 15 0 18',
+  people:'M9 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7z M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5 M16 4.5a3 3 0 0 1 0 6 M18 14.5c2.4.6 4 2.3 4 5',
+  star:'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z',
+  x:'M6 6l12 12M18 6L6 18',
+  info:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M12 11v5 M12 8v.01',
+  heart:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
+  hand:'M7 11V5a1.5 1.5 0 0 1 3 0v5 M10 10V4a1.5 1.5 0 0 1 3 0v6 M13 10V5a1.5 1.5 0 0 1 3 0v7 M16 12V8a1.5 1.5 0 0 1 3 0v6a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-3-5a1.5 1.5 0 0 1 2.5-1.7L7 14'
+};
+const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+const LOGO = `<svg class="mark" viewBox="0 0 52 52" aria-hidden="true"><rect width="52" height="52" rx="12" fill="var(--accent)"/><circle cx="21" cy="26" r="10" fill="none" stroke="var(--accent-ink)" stroke-width="3.5"/><circle cx="31" cy="26" r="10" fill="none" stroke="var(--sun)" stroke-width="3.5"/></svg>`;
+
+const OPPS = [
+  {id:'leitura', titulo:'Reforço de leitura para crianças', ong:'Instituto Ler é Crescer', area:'Educação', bairro:'Bairro Porto', dist:'1,2 km', modo:'perto',
+   quando:'Terças e quintas, 14h às 16h', vagas:'3 vagas abertas', fino:false, combina:'Combina com sua experiência de professor',
+   selos:['Contato por mensagem escrita','Sala no térreo','Ambiente silencioso'],
+   desc:'Acompanhar duplas de crianças de 8 a 10 anos na leitura de livros curtos. Você lê junto, faz perguntas e incentiva. Não é preciso escrever no quadro nem corrigir cadernos.',
+   contato:'Ana Paula, coordenadora, fala com você por mensagem escrita aqui pelo Portal da Terceira Idade. Não há ligações.',
+   legenda:'Ana Paula: "Aqui as crianças leem em duplas, e o voluntário acompanha cada página."',
+   transcricao:['Ana Paula: Olá! Eu sou a Ana Paula, coordenadora do Instituto Ler é Crescer.','Ana Paula: Aqui as crianças leem em duplas, e o voluntário acompanha cada página.','Ana Paula: Não precisa ter pressa. O mais importante é a conversa sobre a história.','[Som de crianças rindo ao fundo]'],
+   dias:[{id:'d1',dia:'Terça-feira, 20 de outubro',hora:'14h às 16h'},{id:'d2',dia:'Quinta-feira, 22 de outubro',hora:'14h às 16h',conflito:'Nesse dia você já tem a Roda de conversa às 15h.'},{id:'d3',dia:'Terça-feira, 27 de outubro',hora:'14h às 16h'}]},
+  {id:'historias', titulo:'Contação de histórias na biblioteca', ong:'Biblioteca Comunitária do Coxipó', area:'Leitura', bairro:'Coxipó', dist:'3,4 km', modo:'perto',
+   quando:'Sábados, 9h às 10h30', vagas:'2 vagas abertas', fino:false, combina:'Você marcou interesse em leitura',
+   selos:['Microfone com amplificador','Contato por mensagem escrita'],
+   desc:'Ler histórias em voz alta para crianças pequenas e suas famílias. A biblioteca escolhe os livros com você com uma semana de antecedência.',
+   contato:'A equipe da biblioteca envia os detalhes por mensagem escrita.',
+   legenda:'Rosa: "Toda manhã de sábado a sala enche de famílias."',
+   transcricao:['Rosa: Bom dia! A biblioteca funciona há 12 anos aqui no Coxipó.','Rosa: Toda manhã de sábado a sala enche de famílias.'],
+   dias:[{id:'d1',dia:'Sábado, 24 de outubro',hora:'9h às 10h30'},{id:'d2',dia:'Sábado, 31 de outubro',hora:'9h às 10h30'}]},
+  {id:'mentoria', titulo:'Mentoria para jovens no primeiro emprego', ong:'Associação Primeiro Passo', area:'Mentoria', bairro:'Online', dist:'De casa', modo:'online',
+   quando:'Quartas, 19h às 20h', vagas:'5 vagas abertas', fino:false, combina:'Combina com sua experiência de professor',
+   selos:['Videochamada com legenda automática','Sem deslocamento'],
+   desc:'Conversar uma vez por semana com um jovem de 17 a 21 anos sobre estudos, entrevistas e rotina de trabalho.',
+   contato:'Os encontros são por videochamada com legenda automática ligada. Avisos chegam por mensagem escrita.',
+   legenda:'Marcos: "Muitos jovens nunca tiveram alguém para pedir conselho."',
+   transcricao:['Marcos: Muitos jovens nunca tiveram alguém para pedir conselho.','Marcos: Uma hora por semana já muda muita coisa.'],
+   dias:[{id:'d1',dia:'Quarta-feira, 21 de outubro',hora:'19h às 20h'},{id:'d2',dia:'Quarta-feira, 28 de outubro',hora:'19h às 20h'}]},
+  {id:'memoria', titulo:'Roda de conversa: memórias de Cuiabá', ong:'Centro de Convivência Boa Esperança', area:'Cultura', bairro:'Boa Esperança', dist:'2,1 km', modo:'perto',
+   quando:'Quintas, 15h às 16h30', vagas:'4 vagas abertas', fino:false, combina:'Você já participou 2 vezes',
+   selos:['Grupo pequeno, até 8 pessoas','Sala com aro magnético para aparelho auditivo'],
+   desc:'Contar e ouvir histórias sobre a cidade com estudantes de História. As conversas viram um livro de memórias do bairro.',
+   contato:'O centro avisa por mensagem escrita. Na sala há aro magnético para aparelhos auditivos.',
+   legenda:'Lúcia: "Cada história contada aqui vira uma página do nosso livro."',
+   transcricao:['Lúcia: Cada história contada aqui vira uma página do nosso livro.'],
+   dias:[{id:'d1',dia:'Quinta-feira, 22 de outubro',hora:'15h às 16h30'},{id:'d2',dia:'Quinta-feira, 29 de outubro',hora:'15h às 16h30'}]},
+  {id:'horta', titulo:'Orientação na horta comunitária', ong:'Projeto Raiz Viva', area:'Meio ambiente', bairro:'CPA', dist:'5,6 km', modo:'perto',
+   quando:'Segundas, 8h às 10h', vagas:'6 vagas abertas', fino:true, combina:'',
+   selos:['Pode exigir trabalho manual fino'],
+   desc:'Ajudar no plantio de mudas e na separação de sementes pequenas com moradores do bairro.',
+   contato:'A coordenação usa ligação telefônica e mensagem.',
+   legenda:'Equipe: "A horta abastece 40 famílias do CPA."',
+   transcricao:['Equipe: A horta abastece 40 famílias do CPA.'],
+   dias:[{id:'d1',dia:'Segunda-feira, 19 de outubro',hora:'8h às 10h'}]}
+];
+const AREAS = ['Todas','Educação','Leitura','Mentoria','Cultura','Meio ambiente'];
+const CONTACTS = [
+  {id:'mensagem', t:'Mensagem escrita no site', d:'Você lê com calma, quando quiser.'},
+  {id:'whatsapp', t:'WhatsApp, só texto', d:'Mensagens escritas no seu WhatsApp.'},
+  {id:'video', t:'Videochamada com legenda', d:'A fala aparece escrita na tela.'},
+  {id:'ligacao', t:'Ligação telefônica', d:'Conversa só por áudio.'}
+];
+const TOPICS = ['Português','Redação','História','Matemática','Leitura em voz alta','Xadrez'];
+const DAYS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const SIZES = [18,20,23,26];
+
+
+
+const NOTES = {
+  home:[
+    {t:'Quatro ações principais, em blocos grandes', d:'Ícone e texto juntos, sem menus escondidos. Reduz a memória necessária para usar o site.', r:'Nielsen 6 · Reconhecer em vez de lembrar'},
+    {t:'Alvos de clique com 64 px ou mais', d:'O tremor faz a mão escorregar. Áreas grandes e afastadas evitam cliques no lugar errado.', r:'WCAG 2.5.5 · Tamanho do alvo · Lei de Fitts'},
+    {t:'Próximo compromisso em destaque', d:'Data por extenso e local visíveis logo na entrada, sem abrir outra página.', r:'Nielsen 1 · Visibilidade do status'},
+    {t:'Barra de acessibilidade no topo de todas as páginas', d:'Tamanho do texto, alto contraste e toques repetidos sempre ao alcance, como recomenda o padrão brasileiro de sites públicos.', r:'eMAG 3.1 · Nielsen 4 · Consistência'}
+  ],
+  buscar:[
+    {t:'Filtros em botões de um clique', d:'Nada de listas suspensas ou controles deslizantes, que exigem precisão fina.', r:'WCAG 2.5.1 · Gestos simples'},
+    {t:'Filtro pelo perfil de acessibilidade', d:'Oculta atividades com trabalho manual fino, mas avisa quantas foram ocultadas e deixa mostrar todas.', r:'Nielsen 3 · Controle e liberdade'},
+    {t:'Selos de acessibilidade em cada vaga', d:'Forma de contato e estrutura do local aparecem antes de o usuário se inscrever.', r:'Nielsen 2 · Linguagem do mundo real'},
+    {t:'Cartão inteiro clicável', d:'O alvo é o cartão todo, não um link pequeno no canto.', r:'Lei de Fitts'}
+  ],
+  detalhe:[
+    {t:'Vídeo com legenda ligada por padrão', d:'Para quem tem perda auditiva, o som não pode ser a única fonte de informação.', r:'WCAG 1.2.2 · Legendas'},
+    {t:'Transcrição completa, incluindo sons', d:'Abre num bloco grande e pode ser lida no ritmo do usuário.', r:'WCAG 1.2.1 · Alternativa em texto'},
+    {t:'Como a ONG vai falar com você', d:'Deixa claro antes da inscrição que o contato será por escrito.', r:'Nielsen 5 · Prevenção de erros'},
+    {t:'Uma ação principal por página', d:'O botão "Quero participar" é o único preenchido e fica fixo na coluna lateral.', r:'Nielsen 8 · Design minimalista'}
+  ],
+  inscricao:[
+    {t:'Fluxo curto em 3 passos com indicador', d:'"Passo 1 de 3" com barra e nomes das etapas mostra onde o usuário está.', r:'Nielsen 1 · Visibilidade do status'},
+    {t:'Escolha por cartões grandes', d:'Substitui o calendário de células pequenas, difícil de clicar com tremor.', r:'WCAG 2.5.5 · Tamanho do alvo'},
+    {t:'Conflito de horário bloqueado com explicação', d:'O dia que bate com outro compromisso fica indisponível e diz por quê.', r:'Nielsen 5 · Prevenção de erros'},
+    {t:'Revisão com "Alterar" e sem limite de tempo', d:'Nada expira. O usuário revisa tudo antes de confirmar.', r:'WCAG 2.2.1 · Tempo ajustável'}
+  ],
+  sucesso:[
+    {t:'Confirmação clara em ícone e texto', d:'Diz o que acontece em seguida e quem vai entrar em contato.', r:'Nielsen 1 · Visibilidade do status'},
+    {t:'Desfazer sem prazo', d:'Um clique acidental pode ser revertido a qualquer momento, com confirmação na própria página.', r:'Nielsen 3 · Controle e liberdade'},
+    {t:'Lembrete visual e escrito', d:'O aviso da véspera chega como mensagem e faixa na tela, nunca só como som.', r:'Acessibilidade auditiva'}
+  ],
+  atividades:[
+    {t:'Horas doadas como reconhecimento', d:'Mostra o valor do trabalho voluntário e incentiva a continuar.', r:'Experiência do usuário · Motivação'},
+    {t:'Cancelar pede confirmação na página', d:'Sem janelas pequenas. A pergunta aparece no lugar, com dois botões grandes.', r:'Nielsen 5 · Prevenção de erros'},
+    {t:'Datas sempre por extenso', d:'"Quinta-feira, 22 de outubro" é mais fácil de entender que "22/10".', r:'Nielsen 2 · Linguagem do mundo real'}
+  ],
+  mensagens:[
+    {t:'Respostas rápidas', d:'Frases prontas evitam digitar com as mãos trêmulas.', r:'Nielsen 7 · Eficiência de uso'},
+    {t:'Ditar como alternativa ao teclado', d:'A fala vira texto antes de enviar, e o usuário confere o que vai mandar.', r:'WCAG 2.1.1 · Múltiplas formas de entrada'},
+    {t:'Avisos visuais de nova mensagem', d:'Faixa amarela e borda da tela piscando no lugar de sons. Teste em "Simular nova mensagem".', r:'Acessibilidade auditiva'}
+  ],
+  perfil:[
+    {t:'Ajustes aplicados na hora', d:'Tamanho do texto e contraste mudam o site inteiro imediatamente, com prévia.', r:'WCAG 1.4.4 · Redimensionar texto'},
+    {t:'Ignorar toques repetidos', d:'Inspirado nas Acomodações de Toque dos celulares. Com o tremor, só o primeiro clique vale.', r:'Acessibilidade motora'},
+    {t:'Interruptores com estado escrito', d:'"Ligado" e "Desligado" aparecem em texto, não só pela cor.', r:'WCAG 1.4.1 · Uso da cor'},
+    {t:'Contato preferido salvo no perfil', d:'A preferência por mensagem escrita é enviada às ONGs automaticamente.', r:'Nielsen 7 · Eficiência de uso'}
+  ],
+  ensinar:[
+    {t:'Doar conhecimento, não só tempo', d:'Valoriza a carreira de professor do Seu Geraldo e atende ao objetivo da plataforma.', r:'Contexto da persona'},
+    {t:'Seleção por botões, sem digitação', d:'Matérias, formato e dias são escolhidos com cliques simples.', r:'Acessibilidade motora'},
+    {t:'Erro explica o que fazer', d:'Se faltar algo, a mensagem diz exatamente o que escolher.', r:'Nielsen 9 · Recuperação de erros'},
+    {t:'Prévia ao vivo', d:'Mostra como a oferta aparece para as ONGs antes de publicar.', r:'Nielsen 1 · Visibilidade do status'}
+  ]
+};
+const TITLES = {home:'Início', buscar:'Encontrar atividades', detalhe:'Detalhes da atividade', inscricao:'Inscrição', sucesso:'Inscrição feita', atividades:'Minhas atividades', mensagens:'Mensagens', perfil:'Perfil e acessibilidade', ensinar:'Ensinar o que sei'};
+const NAV = [['home','home','Início'],['buscar','search','Encontrar atividades'],['atividades','cal','Minhas atividades'],['mensagens','chat','Mensagens'],['ensinar','book','Ensinar o que sei']];
+const JUMPS = [['home','Início'],['buscar','Encontrar'],['detalhe','Detalhe da vaga'],['inscricao','Inscrição'],['atividades','Atividades'],['mensagens','Mensagens'],['perfil','Acessibilidade'],['ensinar','Ensinar']];
+
+const S = {
+  screen:'home', hist:[], size:1, contrast:false, ignoreRepeat:true, visual:true, captions:true, contact:'mensagem',
+  area:'Todas', modo:'todos', adequadas:true, opp:'leitura',
+  signup:{step:1, day:null, contact:'mensagem', err:false},
+  enrolled:[{opp:'memoria', dia:'Quinta-feira, 22 de outubro', hora:'15h às 16h30', contato:'Mensagem escrita no site'}],
+  lastEnrolled:null, confirm:null, undone:false,
+  conv:'ana',
+  convs:{
+    ana:{nome:'Ana Paula', org:'Coordenadora · Instituto Ler é Crescer', ini:'AP', msgs:[
+      {me:false, d:'Ontem', h:'16:20', t:'Olá, Seu Geraldo! Vi que o senhor se interessou pelo reforço de leitura. Qualquer dúvida, pode escrever por aqui.'},
+      {me:true, d:'Ontem', h:'16:45', t:'Boa tarde, Ana. Obrigado! Vou olhar os dias disponíveis.'}]},
+    centro:{nome:'Lúcia', org:'Centro de Convivência Boa Esperança', ini:'LU', msgs:[
+      {me:false, d:'Terça', h:'10:05', t:'Seu Geraldo, a roda de quinta vai falar sobre as festas de São Benedito. Traga suas lembranças!'},
+      {me:true, d:'Terça', h:'11:30', t:'Que beleza. Estarei lá.'}]},
+    bib:{nome:'Rosa', org:'Biblioteca Comunitária do Coxipó', ini:'RO', msgs:[
+      {me:false, d:'Segunda', h:'09:12', t:'Bom dia! Se quiser contar histórias aos sábados, temos vaga. Sem compromisso.'}]}
+  },
+  draft:'', dictating:false, unread:0, alert:null, pins:true, drawer:false,
+  offer:{topics:['Português','Leitura em voz alta'], format:'presencial', days:['Terça'], err:false, done:false}
+};
+
+const root = document.getElementById('site');
+const opp = id => OPPS.find(o => o.id === id);
+const isEnrolled = id => S.enrolled.find(e => e.opp === id);
+const contactName = id => CONTACTS.find(c => c.id === id).t;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pin = n => S.pins ? `<span class="pin" aria-hidden="true">${n}</span>` : '';
+const nowH = () => { const n = new Date(); return n.getHours() + ':' + String(n.getMinutes()).padStart(2,'0'); };
+function greeting(){ const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; }
+function todayLabel(){ try { const s = new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'numeric', month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); } catch(e){ return ''; } }
+
+function oppCard(o, n){
+  return `<button class="opp" data-act="open" data-arg="${o.id}">
+    <span class="tag">${o.area}${n ? pin(n[0]) : ''}</span>
+    <span class="t">${o.titulo}</span>
+    <span class="o">${o.ong}</span>
+    <span class="row"><span>${ic(o.modo === 'online' ? 'globe' : 'loc')}${o.bairro}${o.modo === 'online' ? ' · por videochamada' : ' · ' + o.dist}</span><span>${ic('clock')}${o.quando}</span></span>
+    ${o.combina ? `<span class="match">${ic('star')}${o.combina}</span>` : ''}
+    <span class="seals">${o.selos.map(s => `<span class="seal${o.fino ? ' warn' : ''}">${ic(o.fino ? 'alert' : 'check')}${s}</span>`).join('')}</span>
+    <span class="more">Ver detalhes ${n ? pin(n[1]) : ''}${ic('chev')}</span>
+  </button>`;
+}
+
+/* ---------- Páginas ---------- */
+function vHome(){
+  const next = S.enrolled[0]; const o = next && opp(next.opp);
+  const recs = ['leitura','mentoria','historias'].map(opp);
+  return `
+  <section class="section" style="margin-top:8px">
+    <div class="sec-head"><h2 class="h2">O que você quer fazer? ${pin(1)}</h2></div>
+    <div class="grid-actions">
+      <button class="action" data-act="go" data-arg="buscar"><span class="ic">${ic('search')}</span><span><b>Encontrar onde ajudar ${pin(2)}</b><span class="s">ONGs perto de você e online</span></span>${ic('chev')}</button>
+      <button class="action" data-act="go" data-arg="ensinar"><span class="ic">${ic('book')}</span><span><b>Ensinar o que sei</b><span class="s">Ofereça aulas ou conversas</span></span>${ic('chev')}</button>
+      <button class="action" data-act="go" data-arg="atividades"><span class="ic">${ic('cal')}</span><span><b>Minhas atividades</b><span class="s">${S.enrolled.length} ${S.enrolled.length === 1 ? 'compromisso marcado' : 'compromissos marcados'}</span></span>${ic('chev')}</button>
+      <button class="action" data-act="go" data-arg="mensagens"><span class="ic">${ic('chat')}</span><span><b>Mensagens</b><span class="s">${S.unread ? S.unread + (S.unread === 1 ? ' mensagem nova' : ' mensagens novas') : 'Nenhuma mensagem nova'}</span></span>${S.unread ? `<span class="count">${S.unread}</span>` : ic('chev')}</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sec-head">
+      <div class="stack" style="gap:6px"><h2 class="h2">Recomendadas para você</h2><p class="muted" style="font-size:.88em">Escolhidas pela sua experiência de professor e pelas suas preferências de acessibilidade.</p></div>
+      <button class="lnk" data-act="go" data-arg="buscar">Ver todas as atividades ${ic('chev')}</button>
+    </div>
+    <div class="grid-cards">${recs.map(r => oppCard(r)).join('')}</div>
+  </section>
+
+  <section class="section">
+    <div class="sec-head"><h2 class="h2">Seu impacto em 2026</h2></div>
+    <div class="impact">
+      <div><b>18 h</b><span>de tempo doado</span></div>
+      <div><b>7</b><span>encontros realizados</span></div>
+      <div><b>2</b><span>ONGs ajudadas</span></div>
+      <div><b>34</b><span>crianças e jovens atendidos</span></div>
+    </div>
+  </section>
+  <p class="muted" style="margin-top:28px; font-size:.85em">A barra escura no topo ajusta o texto e o contraste em qualquer página. ${pin(4)}</p>`;
+}
+
+function vHomeHero(){
+  const next = S.enrolled[0]; const o = next && opp(next.opp);
+  return `<section class="band-hero" aria-label="Boas-vindas"><div class="wrap hero">
+    <div class="welcome">
+      <p class="sec-t">${todayLabel()}</p>
+      <h1 class="h1" tabindex="-1" data-focus>${greeting()}, Seu Geraldo</h1>
+      <p class="lead">Há <b>${OPPS.filter(x => !x.fino).length} atividades</b> perto de você ou online que combinam com o seu perfil de professor.</p>
+      <div class="btn-row left"><button class="btn sun" data-act="go" data-arg="buscar">${ic('search')} Encontrar onde ajudar</button><button class="btn ghost" data-act="go" data-arg="ensinar">${ic('book')} Ensinar o que sei</button></div>
+    </div>
+    ${o ? `<section class="next" aria-label="Seu próximo compromisso">
+      <span class="tag">${ic('cal')} Seu próximo compromisso ${pin(3)}</span>
+      <p class="when">${next.dia}, ${next.hora.split(' ')[0]}</p>
+      <p>${o.titulo}</p>
+      <ul class="facts"><li>${ic('loc')}<span>${o.ong} · ${o.bairro}</span></li><li>${ic('chat')}<span>${next.contato}</span></li></ul>
+      <button class="btn sec" data-act="open" data-arg="${o.id}">Ver detalhes</button>
+    </section>` : `<section class="next"><p class="when">Nenhum compromisso marcado</p><p>Que tal escolher uma atividade?</p><button class="btn" data-act="go" data-arg="buscar">Encontrar onde ajudar</button></section>`}
+  </div></section>`;
+}
+
+function vBuscar(){
+  const base = OPPS.filter(o => (S.area === 'Todas' || o.area === S.area) && (S.modo === 'todos' || o.modo === S.modo));
+  const list = S.adequadas ? base.filter(o => !o.fino) : base;
+  const hidden = base.length - list.length;
+  return `
+  <div class="stack" style="margin-bottom:24px">
+    <h1 class="h1" tabindex="-1" data-focus>Onde você quer ajudar?</h1>
+    <p class="lead muted">ONGs de Cuiabá e atividades online que precisam do seu tempo e do seu conhecimento.</p>
+  </div>
+  <div class="split">
+    <aside class="filters sticky" aria-label="Filtros">
+      <p class="ft">Filtrar atividades</p>
+      <div class="stack">
+        <span class="sec-t">Tipo de atividade ${pin(1)}</span>
+        <div class="chips" role="group" aria-label="Tipo de atividade">
+          ${AREAS.map(a => `<button class="chip" aria-pressed="${S.area === a}" data-act="area" data-arg="${a}">${S.area === a ? ic('check') : ''}${a}</button>`).join('')}
+        </div>
+      </div>
+      <div class="stack">
+        <span class="sec-t">Onde</span>
+        <div class="seg" role="group" aria-label="Onde">
+          ${[['perto','Perto'],['online','De casa'],['todos','Todos']].map(([k,l]) => `<button class="chip" aria-pressed="${S.modo === k}" data-act="modo" data-arg="${k}">${l}</button>`).join('')}
+        </div>
+      </div>
+      <button class="switch" role="switch" aria-checked="${S.adequadas}" data-act="adequadas">
+        <span><b>Só adequadas a mim ${pin(2)}</b><span class="s">Esconde as que exigem trabalho manual fino</span></span>
+        <span class="st"><span class="track"></span>${S.adequadas ? 'Ligado' : 'Desligado'}</span>
+      </button>
+    </aside>
+    <div class="stack-lg">
+      <p aria-live="polite"><b>${list.length} ${list.length === 1 ? 'atividade encontrada' : 'atividades encontradas'}</b></p>
+      ${hidden ? `<div class="box warn"><p class="h">${ic('hand')} ${hidden} ${hidden === 1 ? 'atividade oculta' : 'atividades ocultas'}</p><p>Exige trabalho manual fino, como separar sementes pequenas.</p><button class="btn sec auto" data-act="adequadas">Mostrar mesmo assim</button></div>` : ''}
+      <div class="grid-cards">${list.map((o,i) => oppCard(o, i === 0 ? [3,4] : null)).join('')}</div>
+      ${!list.length ? `<div class="box"><p class="h">Nenhuma atividade com esses filtros</p><p>Tente escolher "Todas" ou "Todos" ao lado.</p></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function vDetalhe(){
+  const o = opp(S.opp); const e = isEnrolled(o.id);
+  return `
+  <div class="detail">
+    <div class="stack-lg">
+      <div class="stack">
+        <span class="tag">${o.area}</span>
+        <h1 class="h1" tabindex="-1" data-focus>${o.titulo}</h1>
+        <p class="lead muted">${o.ong}</p>
+      </div>
+      ${o.fino ? `<div class="box warn"><p class="h">${ic('hand')} Atenção</p><p>Esta atividade pode exigir trabalho manual fino. Você pode perguntar à ONG se há outras tarefas.</p></div>` : ''}
+      <div class="stack">
+        <h2 class="h2">O que você vai fazer</h2>
+        <p class="lead">${o.desc}</p>
+      </div>
+      <div class="stack">
+        <h2 class="h2">Conheça a ONG ${pin(1)}</h2>
+        <div class="video" role="img" aria-label="Vídeo de apresentação da ONG, com legendas">
+          <div class="scene"><div class="play">${ic('play')}</div></div>
+          ${S.captions ? `<span class="cc">LEGENDAS LIGADAS</span><p class="cap">${esc(o.legenda)}</p>` : `<span class="cc">SEM LEGENDA</span>`}
+        </div>
+        <details class="tr">
+          <summary>Ler tudo o que é falado no vídeo ${pin(2)}<span class="chev">${ic('chev')}</span></summary>
+          <div class="body">${o.transcricao.map(l => `<p>${esc(l)}</p>`).join('')}</div>
+        </details>
+      </div>
+    </div>
+    <aside class="stack-lg sticky">
+      <div class="card">
+        <ul class="facts">
+          <li>${ic(o.modo === 'online' ? 'globe' : 'loc')}<span><b>${o.bairro}</b>${o.modo === 'online' ? ' · por videochamada' : ' · a ' + o.dist + ' de você'}</span></li>
+          <li>${ic('clock')}<span>${o.quando}</span></li>
+          <li>${ic('people')}<span>${o.vagas}</span></li>
+        </ul>
+        ${o.combina ? `<div class="box soft"><p class="h">${ic('star')} ${o.combina}</p></div>` : ''}
+        ${e ? `<div class="box soft"><p class="h">${ic('check')} Você está inscrito</p><p>${e.dia}, ${e.hora}</p></div>
+               <button class="btn sec" data-act="go" data-arg="atividades">Ver em Minhas atividades</button>`
+            : `<button class="btn" data-act="startSignup">Quero participar ${pin(4)}</button>`}
+      </div>
+      <div class="box"><p class="h">${ic('chat')} Como a ONG vai falar com você ${pin(3)}</p><p>${o.contato}</p></div>
+      <div class="stack"><span class="sec-t">Acessibilidade do local</span>
+        <div class="seals">${o.selos.map(s => `<span class="seal${o.fino ? ' warn' : ''}">${ic(o.fino ? 'alert' : 'check')}${s}</span>`).join('')}</div></div>
+    </aside>
+  </div>`;
+}
+
+function stepsBar(step){
+  const lbl = ['Escolher o dia','Forma de contato','Confirmar'];
+  return `<div class="steps" aria-label="Passo ${step} de 3">
+    <p><b>Passo ${step} de 3</b> ${pin(1)}</p>
+    <div class="bar">${[1,2,3].map(n => `<span class="${n <= step ? 'on' : ''}"></span>`).join('')}</div>
+    <div class="lbl">${lbl.map((l,i) => `<span class="${i+1 === step ? 'on' : ''}">${l}</span>`).join('')}</div>
+  </div>`;
+}
+function contactRadios(cur, act){
+  return `<div class="radios" role="radiogroup" aria-label="Forma de contato">${CONTACTS.map(c => `
+    <button class="radio" role="radio" aria-checked="${cur === c.id}" data-act="${act}" data-arg="${c.id}">
+      <span class="dot">${cur === c.id ? ic('check') : ''}</span>
+      <span><b>${c.t}</b><span class="s">${c.d}</span></span>
+    </button>`).join('')}</div>`;
+}
+function vInscricao(){
+  const o = opp(S.opp); const sg = S.signup; let body = '';
+  if (sg.step === 1){
+    body = `<h1 class="h1" tabindex="-1" data-focus>Qual dia é melhor para você?</h1>
+    <p class="muted">${o.titulo} · ${o.ong}</p>
+    <div class="stack" role="radiogroup" aria-label="Dias disponíveis">
+      ${o.dias.map(d => d.conflito
+        ? `<div class="radio" role="radio" aria-checked="false" aria-disabled="true" tabindex="0"><span class="dot"></span><span><b>${d.dia}</b><span class="s">${d.hora}</span><span class="warnline">${ic('alert')} ${d.conflito} ${pin(3)}</span></span></div>`
+        : `<button class="radio" role="radio" aria-checked="${sg.day === d.id}" data-act="pickDay" data-arg="${d.id}"><span class="dot">${sg.day === d.id ? ic('check') : ''}</span><span><b>${d.dia}${d.id === 'd1' ? pin(2) : ''}</b><span class="s">${d.hora}</span></span></button>`).join('')}
+    </div>
+    ${sg.err ? `<p class="err" role="alert">${ic('alert')} Escolha um dia acima para continuar.</p>` : ''}
+    <div class="btn-row"><button class="btn quiet" data-act="back">Voltar</button><button class="btn" data-act="stepNext">Continuar</button></div>`;
+  } else if (sg.step === 2){
+    body = `<h1 class="h1" tabindex="-1" data-focus>Como a ONG deve falar com você?</h1>
+    <p class="muted">Já marcamos o que você escolheu no seu perfil. Pode mudar só para esta atividade.</p>
+    ${contactRadios(sg.contact,'pickContact')}
+    <div class="btn-row"><button class="btn quiet" data-act="back">Voltar</button><button class="btn" data-act="stepNext">Continuar</button></div>`;
+  } else {
+    const d = o.dias.find(x => x.id === sg.day);
+    body = `<h1 class="h1" tabindex="-1" data-focus>Confira antes de confirmar ${pin(4)}</h1>
+    <ul class="review">
+      <li><span><span class="k">Atividade</span><span class="v">${o.titulo}</span></span></li>
+      <li><span><span class="k">Dia</span><span class="v">${d.dia}, ${d.hora}</span></span><button class="link" data-act="stepTo" data-arg="1">Alterar</button></li>
+      <li><span><span class="k">Contato</span><span class="v">${contactName(sg.contact)}</span></span><button class="link" data-act="stepTo" data-arg="2">Alterar</button></li>
+      <li><span><span class="k">Local</span><span class="v">${o.ong} · ${o.bairro}</span></span></li>
+    </ul>
+    <p class="muted">Não há pressa. Esta página não expira.</p>
+    <div class="btn-row"><button class="btn quiet" data-act="back">Voltar</button><button class="btn" data-act="confirmSignup">${ic('check')} Confirmar inscrição</button></div>`;
+  }
+  return `<div class="narrow">${stepsBar(sg.step)}${body}</div>`;
+}
+
+function vSucesso(){
+  const o = opp(S.opp); const e = S.lastEnrolled;
+  if (S.undone) return `<div class="narrow">
+    <div class="done"><h1 class="h1" tabindex="-1" data-focus>Inscrição desfeita</h1>
+    <p class="lead">Nada foi enviado à ONG. Você pode se inscrever de novo quando quiser.</p></div>
+    <div class="btn-row"><button class="btn" data-act="open" data-arg="${o.id}">Voltar para a atividade</button><button class="btn quiet" data-act="go" data-arg="home">Ir para o início</button></div></div>`;
+  return `<div class="narrow">
+  <div class="done">
+    <div class="big">${ic('check')}</div>
+    <h1 class="h1" tabindex="-1" data-focus>Inscrição confirmada! ${pin(1)}</h1>
+    <p class="lead">${o.ong} vai enviar uma <b>mensagem escrita</b> até amanhã com os próximos passos.</p>
+  </div>
+  <div class="next">
+    <p class="when">${e.dia}</p>
+    <p>${e.hora} · ${o.titulo}</p>
+    <ul class="facts"><li>${ic('loc')}<span>${o.bairro}</span></li><li>${ic('chat')}<span>${e.contato}</span></li></ul>
+  </div>
+  <div class="box"><p class="h">${ic('bell')} Lembrete ${pin(3)}</p><p>Um dia antes, você recebe uma mensagem e um aviso amarelo na tela.</p></div>
+  <div class="btn-row"><button class="btn" data-act="go" data-arg="atividades">Ver minhas atividades</button><button class="btn quiet" data-act="go" data-arg="home">Ir para o início</button></div>
+  ${S.confirm === 'undo'
+    ? `<div class="confirm" role="alert"><p><b>Desfazer esta inscrição?</b></p><p>A vaga volta a ficar disponível.</p><div class="btn-row"><button class="btn danger" data-act="undoYes">Sim, desfazer</button><button class="btn sec" data-act="confirmNo">Não, manter inscrição</button></div></div>`
+    : `<button class="btn danger auto" data-act="askUndo">Desfazer inscrição ${pin(2)}</button>`}
+  </div>`;
+}
+
+function vAtividades(){
+  return `
+  <div class="stack" style="margin-bottom:24px"><h1 class="h1" tabindex="-1" data-focus>Minhas atividades</h1></div>
+  <div class="two">
+    <div class="stack-lg">
+      <h2 class="h2">Próximos compromissos</h2>
+      ${S.enrolled.length ? S.enrolled.map((e,i) => { const o = opp(e.opp); return `
+        <section class="next" aria-label="${o.titulo}">
+          <p class="when">${e.dia} ${i === 0 ? pin(3) : ''}</p>
+          <p>${e.hora} · ${o.titulo}</p>
+          <ul class="facts"><li>${ic('loc')}<span>${o.ong} · ${o.bairro}</span></li><li>${ic('chat')}<span>${e.contato}</span></li></ul>
+          ${S.confirm === 'cancel:' + o.id
+            ? `<div class="confirm" role="alert"><p><b>Cancelar sua participação?</b></p><p>A ONG será avisada por mensagem escrita.</p><div class="btn-row"><button class="btn danger" data-act="cancelYes" data-arg="${o.id}">Sim, cancelar</button><button class="btn sec" data-act="confirmNo">Não, manter</button></div></div>`
+            : `<div class="btn-row"><button class="btn sec" data-act="open" data-arg="${o.id}">Ver detalhes</button><button class="btn danger" data-act="askCancel" data-arg="${o.id}">Cancelar participação ${i === 0 ? pin(2) : ''}</button></div>`}
+        </section>`; }).join('') : `<div class="box"><p class="h">Nenhum compromisso marcado</p><p>Encontre uma atividade perto de você.</p><button class="btn auto" data-act="go" data-arg="buscar">Encontrar onde ajudar</button></div>`}
+    </div>
+    <div class="stack-lg">
+      <h2 class="h2">Seu impacto ${pin(1)}</h2>
+      <div class="impact"><div><b>18 h</b><span>doadas em 2026</span></div><div><b>7</b><span>encontros</span></div></div>
+      <h2 class="h2">Você já participou</h2>
+      <ul class="review">
+        <li><span><span class="k">Quinta-feira, 8 de outubro</span><span class="v">Roda de conversa: memórias de Cuiabá</span></span><span class="muted">1h30</span></li>
+        <li><span><span class="k">Quinta-feira, 1º de outubro</span><span class="v">Roda de conversa: memórias de Cuiabá</span></span><span class="muted">1h30</span></li>
+        <li><span><span class="k">Setembro</span><span class="v">Reforço escolar de Português · ONG Semear</span></span><span class="muted">15h</span></li>
+      </ul>
+    </div>
+  </div>`;
+}
+
+function vMensagens(){
+  const c = S.convs[S.conv]; let lastD = '';
+  return `
+  <div class="stack" style="margin-bottom:24px"><h1 class="h1" tabindex="-1" data-focus>Mensagens</h1></div>
+  <div class="inbox">
+    <nav class="convs" aria-label="Conversas">
+      ${Object.entries(S.convs).map(([k,v]) => { const last = v.msgs[v.msgs.length-1]; return `
+        <button class="conv" data-act="conv" data-arg="${k}" aria-current="${S.conv === k}">
+          <span class="av" aria-hidden="true">${v.ini}</span>
+          <span><b>${v.nome}</b><span class="s">${esc(last.t)}</span></span>
+          <span class="muted" style="font-size:.7em">${last.d}</span>
+        </button>`; }).join('')}
+    </nav>
+    <section class="pane" aria-label="Conversa com ${c.nome}">
+      <div class="who"><div class="av" aria-hidden="true">${c.ini}</div><div><h2 class="h3">${c.nome}</h2><p class="muted" style="font-size:.85em">${c.org}</p></div></div>
+      <div class="thread" aria-live="polite">
+        ${c.msgs.map(m => { const sep = m.d !== lastD ? `<p class="daysep">${m.d}</p>` : ''; lastD = m.d; return sep + `<p class="msg ${m.me ? 'me' : 'them'}">${esc(m.t)}<time>${m.me ? 'Você' : c.nome} · ${m.h}</time></p>`; }).join('')}
+      </div>
+      <div class="stack">
+        <span class="sec-t">Responder com um clique ${pin(1)}</span>
+        <div class="quick">${['Sim, confirmo','Vou me atrasar um pouco','Não poderei ir','Pode explicar por escrito?'].map(q => `<button class="chip" data-act="quick" data-arg="${q}">${q}</button>`).join('')}</div>
+      </div>
+      <div class="compose">
+        <label class="sec-t" for="draft">Ou escreva sua mensagem</label>
+        ${S.dictating ? `<div class="listening" role="status"><span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Ouvindo… pode falar.</div>` : ''}
+        <textarea id="draft" placeholder="Digite aqui ou clique em Ditar">${esc(S.draft)}</textarea>
+        <div class="row">
+          <button class="btn sec" data-act="dictate">${ic('mic')} Ditar ${pin(2)}</button>
+          <button class="btn" data-act="send">${ic('send')} Enviar</button>
+        </div>
+        <p class="muted" style="font-size:.8em">Novas mensagens aparecem numa faixa amarela, com a borda da tela piscando. ${pin(3)}</p>
+      </div>
+    </section>
+  </div>`;
+}
+
+function sw(act, on, title, desc){
+  return `<button class="switch" role="switch" aria-checked="${on}" data-act="${act}"><span><b>${title}</b><span class="s">${desc}</span></span><span class="st"><span class="track"></span>${on ? 'Ligado' : 'Desligado'}</span></button>`;
+}
+function vPerfil(){
+  return `
+  <div class="profile" style="margin-bottom:28px">
+    <div class="av" aria-hidden="true">GM</div>
+    <div><h1 class="h1" tabindex="-1" data-focus>Geraldo Martins</h1><p class="muted">Professor aposentado · voluntário desde 2025</p></div>
+  </div>
+  <div class="two">
+    <div class="stack-lg">
+      <h2 class="h2">Leitura ${pin(1)}</h2>
+      <div class="sizer">
+        <button data-act="size" data-arg="-1" aria-label="Diminuir texto" style="font-size:.8em">A−</button>
+        <div class="prev"><small>Tamanho ${S.size + 1} de 4</small>Exemplo de texto</div>
+        <button data-act="size" data-arg="1" aria-label="Aumentar texto" style="font-size:1.15em">A+</button>
+      </div>
+      ${sw('contrast', S.contrast, 'Alto contraste ' + pin(3), 'Fundo preto, letras brancas e amarelas')}
+      <h2 class="h2">Toque e clique ${pin(2)}</h2>
+      ${sw('ignoreRepeat', S.ignoreRepeat, 'Ignorar toques repetidos', 'Se a mão tremer e clicar duas vezes, só o primeiro clique vale.')}
+      <h2 class="h2">Audição</h2>
+      ${sw('visual', S.visual, 'Avisos visuais', 'Faixa amarela e borda da tela piscando quando chega mensagem')}
+      ${sw('captions', S.captions, 'Legendas sempre ligadas', 'Em todos os vídeos e videochamadas')}
+    </div>
+    <div class="stack-lg">
+      <h2 class="h2">Como prefere ser contatado ${pin(4)}</h2>
+      <p class="muted">As ONGs recebem essa preferência quando você se inscreve.</p>
+      ${contactRadios(S.contact,'prefContact').replace('class="radios"','class="stack"')}
+    </div>
+  </div>`;
+}
+
+function vEnsinar(){
+  const f = S.offer;
+  const fmt = f.format === 'presencial' ? 'Presencial' : f.format === 'online' ? 'Online' : 'Presencial ou online';
+  if (f.done) return `<div class="narrow">
+    <div class="done"><div class="big">${ic('check')}</div>
+    <h1 class="h1" tabindex="-1" data-focus>Sua oferta foi publicada!</h1>
+    <p class="lead">3 ONGs da sua região já podem ver. Quando alguma tiver interesse, você recebe uma mensagem escrita.</p></div>
+    <div class="box"><p><b>${f.topics.join(', ')}</b></p><p class="muted">${fmt} · ${f.days.join(', ')}</p></div>
+    <div class="btn-row"><button class="btn" data-act="go" data-arg="home">Ir para o início</button><button class="btn quiet" data-act="offerEdit">Editar oferta</button></div></div>`;
+  return `
+  <div class="stack" style="margin-bottom:28px">
+    <h1 class="h1" tabindex="-1" data-focus>Ensinar o que sei ${pin(1)}</h1>
+    <p class="lead">Sua experiência em sala de aula pode ajudar crianças, jovens e adultos da sua cidade.</p>
+  </div>
+  <div class="two">
+    <div class="stack-lg">
+      <div class="stack">
+        <span class="sec-t">O que você pode ensinar? ${pin(2)}</span>
+        <div class="chips">${TOPICS.map(t => `<button class="chip" aria-pressed="${f.topics.includes(t)}" data-act="topic" data-arg="${t}">${f.topics.includes(t) ? ic('check') : ''}${t}</button>`).join('')}</div>
+      </div>
+      <div class="stack">
+        <span class="sec-t">Como prefere?</span>
+        <div class="seg">${[['presencial','Presencial'],['online','Online'],['ambos','Os dois']].map(([k,l]) => `<button class="chip" aria-pressed="${f.format === k}" data-act="format" data-arg="${k}">${l}</button>`).join('')}</div>
+      </div>
+      <div class="stack">
+        <span class="sec-t">Quais dias?</span>
+        <div class="chips">${DAYS.map(d => `<button class="chip" aria-pressed="${f.days.includes(d)}" data-act="day" data-arg="${d}">${f.days.includes(d) ? ic('check') : ''}${d}</button>`).join('')}</div>
+      </div>
+      ${f.err ? `<p class="err" role="alert">${ic('alert')} ${f.err} ${pin(3)}</p>` : ''}
+      <button class="btn auto" data-act="publish">Publicar minha oferta</button>
+    </div>
+    <aside class="stack sticky">
+      <span class="sec-t">Como as ONGs vão ver ${pin(4)}</span>
+      <div class="preview-offer">
+        <span class="tag" style="color:inherit; opacity:.8">Voluntário disponível</span>
+        <p class="t">Prof. Geraldo Martins</p>
+        <p>${f.topics.length ? f.topics.join(', ') : '<i>Escolha ao menos uma matéria</i>'}</p>
+        <div class="seals"><span class="seal">${fmt}</span>${f.days.map(d => `<span class="seal">${d}</span>`).join('')}</div>
+        <p style="font-size:.85em; opacity:.85">Prefere contato por ${contactName(S.contact).toLowerCase()}.</p>
+      </div>
+    </aside>
+  </div>`;
+}
+
+const VIEWS = {home:vHome, buscar:vBuscar, detalhe:vDetalhe, inscricao:vInscricao, sucesso:vSucesso, atividades:vAtividades, mensagens:vMensagens, perfil:vPerfil, ensinar:vEnsinar};
+const CRUMBS = {
+  detalhe:()=>[['buscar','Encontrar atividades'],[null, opp(S.opp).titulo]],
+  inscricao:()=>[['buscar','Encontrar atividades'],['detalhe', opp(S.opp).titulo],[null,'Inscrição']],
+  sucesso:()=>[['atividades','Minhas atividades'],[null,'Inscrição feita']],
+  perfil:()=>[[null,'Perfil e acessibilidade']]
+};
+
+/* ---------- Renderização ---------- */
+let lastScreen = null, toastTimer = null;
+function render(){
+  const ae = document.activeElement;
+  const fKey = ae && root.contains(ae) && ae.dataset.act ? [ae.dataset.act, ae.dataset.arg || ''] : null;
+  const changed = lastScreen !== S.screen;
+  root.style.setProperty('--fs', SIZES[S.size] + 'px');
+  root.dataset.contrast = S.contrast ? 'high' : 'normal';
+  const navOf = S.screen === 'detalhe' || S.screen === 'inscricao' ? 'buscar' : S.screen === 'sucesso' ? 'atividades' : S.screen;
+  const cr = CRUMBS[S.screen] ? CRUMBS[S.screen]() : null;
+  const notes = NOTES[S.screen] || [];
+  root.innerHTML = `
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+  <div class="a11y" role="region" aria-label="Barra de acessibilidade">
+    <div class="wrap">
+      <span class="lb">Acessibilidade</span>
+      <span class="grp" role="group" aria-label="Tamanho do texto"><span>Texto</span>
+        <button data-act="size" data-arg="-1" aria-label="Diminuir texto">A−</button>
+        <button data-act="sizeReset" aria-label="Texto no tamanho padrão">A</button>
+        <button data-act="size" data-arg="1" aria-label="Aumentar texto">A+</button></span>
+      <span class="grp"><button data-act="contrast" aria-pressed="${S.contrast}">Alto contraste</button></span>
+      <span class="grp"><button data-act="ignoreRepeat" aria-pressed="${S.ignoreRepeat}">Ignorar toques repetidos</button></span>
+    </div>
+  </div>
+  <header class="head">
+    <div class="wrap bar1">
+      <button class="logo" data-act="go" data-arg="home" aria-label="Portal da Terceira Idade, página inicial">${LOGO}<span class="wm"><b>Portal da Terceira Idade</b><small>Voluntariado 60+ · Cuiabá</small></span></button>
+      <button class="me" data-act="go" data-arg="perfil" ${S.screen === 'perfil' ? 'aria-current="page"' : ''} aria-label="Perfil e acessibilidade"><span class="av" aria-hidden="true">GM</span><span class="nm"><b>Seu Geraldo</b><small>Meu perfil</small></span></button>
+    </div>
+    <nav class="nav" aria-label="Menu principal"><div class="wrap">
+        ${NAV.map(([k,i,l]) => `<button data-act="go" data-arg="${k}" ${navOf === k ? 'aria-current="page"' : ''}>${ic(i)}<span>${l}</span>${k === 'mensagens' && S.unread ? `<span class="badge" aria-label="${S.unread} novas">${S.unread}</span>` : ''}</button>`).join('')}
+    </div></nav>
+  </header>
+  <main id="conteudo">
+    ${S.screen === 'home' ? vHomeHero() : ''}
+    <div class="wrap">
+      ${cr ? `<div class="crumbs"><button class="backbtn" data-act="back">${ic('back')} Voltar</button>
+        <nav aria-label="Você está em"><ol><li>Início</li>${cr.map(([k,l]) => `<li ${k ? '' : 'aria-current="page"'}>${esc(l)}</li>`).join('')}</ol></nav></div>` : ''}
+      ${VIEWS[S.screen]()}
+    </div>
+  </main>
+  <footer class="foot">
+    <div class="wrap cols">
+      <div class="brand"><span class="nm">${LOGO}Portal da Terceira Idade</span><p>Conectamos pessoas com mais de 60 anos a ONGs de Cuiabá para doar tempo e conhecimento.</p><span class="seal-a11y">${ic('check')} Feito segundo o eMAG e a WCAG 2.1</span></div>
+      <div><h4>Portal</h4><ul><li><button data-act="go" data-arg="buscar">Encontrar atividades</button></li><li><button data-act="go" data-arg="ensinar">Ensinar o que sei</button></li><li><button data-act="go" data-arg="atividades">Minhas atividades</button></li></ul></div>
+      <div><h4>Para ONGs</h4><ul><li><span>Cadastrar minha ONG</span></li><li><span>Publicar uma vaga</span></li><li><span>Guia de acolhimento 60+</span></li></ul></div>
+      <div><h4>Ajuda</h4><ul><li><button data-act="go" data-arg="perfil">Acessibilidade</button></li><li><button data-act="go" data-arg="mensagens">Atendimento por mensagem</button></li><li><span>Perguntas frequentes</span></li></ul></div>
+    </div>
+    <div class="bottom"><div class="wrap"><span>© 2026 Portal da Terceira Idade · Protótipo acadêmico para o seminário de Interação Humano-Computador</span><span>Dados de exemplo · Cuiabá, MT</span></div></div>
+  </footer>
+  ${S.alert ? `<div class="alert" role="alert">${ic('bell')}<div><b>Nova mensagem de Ana Paula</b><br><span style="font-size:.85em">${esc(S.alert)}</span></div>
+    <button class="go" data-act="readAlert">Ler agora</button><button class="x" data-act="closeAlert">Fechar</button></div>` : ''}
+  <div class="flashframe" aria-hidden="true"></div>
+  <button class="fab" data-act="drawer" aria-expanded="${S.drawer}">${ic('info')}<span class="lbl">Notas de IHC</span> (${notes.length})</button>
+  ${S.drawer ? `<aside class="drawer" role="dialog" aria-label="Notas de IHC">
+    <div class="top"><div><span class="eyebrow">Seminário de IHC</span><h2>Decisões de design</h2></div><button class="close" data-act="drawer" aria-label="Fechar notas">${ic('x')}</button></div>
+    <div class="persona"><div class="av" aria-hidden="true">SG</div><div><b>Persona: Seu Geraldo, 73 anos</b><ul><li>Professor aposentado</li><li>Tremor essencial leve nas mãos</li><li>Perda auditiva progressiva</li></ul></div></div>
+    <div class="d-sec"><h3>Ir para a página</h3><div class="d-tools">${JUMPS.map(([k,l]) => `<button data-jump="${k}" aria-pressed="${S.screen === k}">${l}</button>`).join('')}</div></div>
+    <div class="d-sec"><h3>Demonstração</h3><div class="d-tools">
+      <button data-act="pins" aria-pressed="${S.pins}">Marcadores numerados</button>
+      <button data-act="simulate">${ic('bell')} Simular nova mensagem</button></div></div>
+    <div class="d-sec"><h3>Nesta página: ${TITLES[S.screen]}</h3>
+      <ol class="notes">${notes.map((n,i) => `<li><span class="num">${i+1}</span><span><b>${n.t}</b>${n.d}<br><span class="ref">${n.r}</span></span></li>`).join('')}</ol></div>
+  </aside>` : ''}`;
+
+  if (changed && lastScreen !== null){
+    window.scrollTo(0,0);
+    const h = root.querySelector('[data-focus]'); if (h) h.focus({preventScroll:true});
+  } else if (fKey){
+    const sel = `[data-act="${fKey[0]}"]` + (fKey[1] ? `[data-arg="${CSS.escape(fKey[1])}"]` : '');
+    const el = root.querySelector(sel); if (el) el.focus({preventScroll:true});
+  }
+  const th = root.querySelector('.thread'); if (th) th.scrollTop = th.scrollHeight;
+  lastScreen = S.screen;
+}
+
+function toast(msg){
+  let t = document.querySelector('.toast'); if (!t){ t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role','status'); document.body.appendChild(t); }
+  t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 1800);
+}
+function flash(){ const f = root.querySelector('.flashframe'); if (!f) return; f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
+
+/* ---------- Navegação e ações ---------- */
+function go(screen){
+  if (screen === S.screen){ render(); return; }
+  S.hist.push(S.screen); S.screen = screen; S.confirm = null;
+  if (screen === 'mensagens'){ S.unread = 0; S.alert = null; }
+  render();
+}
+function back(){
+  if (S.screen === 'inscricao' && S.signup.step > 1){ S.signup.step--; S.signup.err = false; lastScreen = null; render(); return; }
+  S.confirm = null; S.screen = S.hist.pop() || 'home'; render();
+}
+function receive(text, conv){
+  conv = conv || 'ana';
+  S.convs[conv].msgs.push({me:false, d:'Hoje', h:nowH(), t:text});
+  if (!(S.screen === 'mensagens' && S.conv === conv)){ S.unread++; if (S.visual) S.alert = text; }
+  render(); if (S.visual) flash();
+}
+function sendMsg(text){
+  if (!text.trim()){ toast('Escreva ou dite uma mensagem antes de enviar'); return; }
+  const c = S.conv;
+  S.convs[c].msgs.push({me:true, d:'Hoje', h:nowH(), t:text.trim()}); S.draft = ''; render();
+  setTimeout(() => receive('Combinado, Seu Geraldo! Obrigada por avisar.', c), 2200);
+}
+
+let lastTap = 0;
+root.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act],[data-jump]'); if (!el) return;
+  if (el.dataset.jump){ jump(el.dataset.jump); return; }
+  const a = el.dataset.act, g = el.dataset.arg;
+  const now = Date.now();
+  if (S.ignoreRepeat && a !== 'drawer' && a !== 'pins' && now - lastTap < 650){ ev.preventDefault(); toast('Toque repetido ignorado'); return; }
+  lastTap = now;
+  switch(a){
+    case 'go': go(g); break;
+    case 'back': back(); break;
+    case 'open': S.opp = g; if (S.screen === 'detalhe') render(); else go('detalhe'); break;
+    case 'area': S.area = g; render(); break;
+    case 'modo': S.modo = g; render(); break;
+    case 'adequadas': S.adequadas = !S.adequadas; render(); break;
+    case 'startSignup': S.signup = {step:1, day:null, contact:S.contact, err:false}; go('inscricao'); break;
+    case 'pickDay': S.signup.day = g; S.signup.err = false; render(); break;
+    case 'pickContact': S.signup.contact = g; render(); break;
+    case 'stepNext':
+      if (S.signup.step === 1 && !S.signup.day){ S.signup.err = true; render(); break; }
+      S.signup.step++; lastScreen = null; render(); break;
+    case 'stepTo': S.signup.step = +g; lastScreen = null; render(); break;
+    case 'confirmSignup': {
+      const o = opp(S.opp); const d = o.dias.find(x => x.id === S.signup.day);
+      const e = {opp:o.id, dia:d.dia, hora:d.hora, contato:contactName(S.signup.contact)};
+      S.enrolled = S.enrolled.filter(x => x.opp !== o.id).concat(e); S.lastEnrolled = e; S.undone = false;
+      S.hist = ['home']; S.screen = 'sucesso'; render();
+      if (o.id === 'leitura') setTimeout(() => receive('Que alegria, Seu Geraldo! A sala é a número 2, no térreo. Até ' + d.dia.split(',')[0].toLowerCase() + '!'), 5000);
+      break; }
+    case 'askUndo': S.confirm = 'undo'; render(); break;
+    case 'undoYes': S.enrolled = S.enrolled.filter(x => x.opp !== S.opp); S.undone = true; S.confirm = null; lastScreen = null; render(); break;
+    case 'confirmNo': S.confirm = null; render(); break;
+    case 'askCancel': S.confirm = 'cancel:' + g; render(); break;
+    case 'cancelYes': S.enrolled = S.enrolled.filter(x => x.opp !== g); S.confirm = null; render(); toast('Participação cancelada. A ONG foi avisada.'); break;
+    case 'conv': S.conv = g; S.draft = ''; render(); break;
+    case 'quick': sendMsg(g); break;
+    case 'send': sendMsg(S.draft); break;
+    case 'dictate':
+      if (S.dictating) break;
+      S.dictating = true; render();
+      setTimeout(() => { S.dictating = false; S.draft = 'Bom dia. Posso levar alguns livros meus para as crianças?'; render(); }, 1800);
+      break;
+    case 'readAlert': S.conv = 'ana'; go('mensagens'); break;
+    case 'closeAlert': S.alert = null; render(); break;
+    case 'size': S.size = Math.max(0, Math.min(3, S.size + +g)); render(); break;
+    case 'sizeReset': S.size = 1; render(); break;
+    case 'contrast': S.contrast = !S.contrast; render(); break;
+    case 'ignoreRepeat': S.ignoreRepeat = !S.ignoreRepeat; render(); break;
+    case 'visual': S.visual = !S.visual; render(); break;
+    case 'captions': S.captions = !S.captions; render(); break;
+    case 'prefContact': S.contact = g; render(); break;
+    case 'topic': { const t = S.offer.topics; S.offer.topics = t.includes(g) ? t.filter(x => x !== g) : t.concat(g); S.offer.err = false; render(); break; }
+    case 'format': S.offer.format = g; render(); break;
+    case 'day': { const d = S.offer.days; S.offer.days = d.includes(g) ? d.filter(x => x !== g) : d.concat(g); S.offer.err = false; render(); break; }
+    case 'publish':
+      if (!S.offer.topics.length){ S.offer.err = 'Escolha pelo menos uma matéria acima.'; render(); break; }
+      if (!S.offer.days.length){ S.offer.err = 'Escolha pelo menos um dia acima.'; render(); break; }
+      S.offer.done = true; lastScreen = null; render(); window.scrollTo(0,0); break;
+    case 'offerEdit': S.offer.done = false; lastScreen = null; render(); break;
+    case 'drawer': S.drawer = !S.drawer; render(); if (S.drawer){ const c = root.querySelector('.drawer .close'); c && c.focus(); } else { const f = root.querySelector('.fab'); f && f.focus(); } break;
+    case 'pins': S.pins = !S.pins; render(); break;
+    case 'simulate': {
+      const pool = ['Seu Geraldo, amanhã a sala do reforço será a número 2, no térreo.','As crianças adoraram a última leitura. Até a próxima!','Lembrete: na quinta às 15h tem Roda de conversa no Centro Boa Esperança.'];
+      receive(pool[S.convs.ana.msgs.length % pool.length]); break; }
+  }
+});
+function jump(k){
+  S.confirm = null;
+  if (k === 'detalhe'){ S.opp = 'leitura'; S.hist = ['home','buscar']; }
+  else if (k === 'inscricao'){ S.opp = 'leitura'; S.signup = {step:1, day:null, contact:S.contact, err:false}; S.hist = ['home','buscar','detalhe']; }
+  else S.hist = k === 'home' ? [] : ['home'];
+  if (k === 'mensagens'){ S.unread = 0; S.alert = null; }
+  S.screen = k; render();
+}
+root.addEventListener('input', ev => { if (ev.target.id === 'draft') S.draft = ev.target.value; });
+root.addEventListener('keydown', ev => {
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.getAttribute('aria-disabled') === 'true'){ ev.preventDefault(); toast('Este dia não está disponível'); }
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && S.drawer){ S.drawer = false; render(); } });
+
+render();
+})();
+</script>
+
+</body>
+</html>
