@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#02040A;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#7FB0FF;text-decoration:none}a:hover{color:#A9C7FF}
+input::placeholder{color:var(--ink3)}
+button{font-family:inherit}
+[data-theme=dark]{--bg:#04060E;--card:rgba(24,36,74,.42);--card2:rgba(30,44,88,.55);--solid:#111A38;--line:rgba(140,170,255,.14);--ink:#EEF2FA;--ink2:#A2ADC8;--ink3:#707C9A;--glass:rgba(10,16,36,.72);--stars:1}
+[data-theme=light]{--bg:#F1F3F8;--card:rgba(255,255,255,.9);--card2:#FFFFFF;--solid:#FFFFFF;--line:rgba(12,22,52,.09);--ink:#0A1124;--ink2:#46526E;--ink3:#69738D;--glass:rgba(255,255,255,.8);--stars:0}
+[data-accent=blue]{--acc:#3B7BFF;--acc2:#8AB6FF;--glow:rgba(59,123,255,.42)}
+[data-accent=cyan]{--acc:#0E9BD0;--acc2:#6FD9F5;--glow:rgba(14,155,208,.4)}
+[data-accent=violet]{--acc:#6F55F5;--acc2:#B3A2FF;--glow:rgba(111,85,245,.42)}
+@keyframes nasaIn{0%{opacity:0;letter-spacing:.9em;filter:blur(10px)}100%{opacity:1;letter-spacing:.34em;filter:blur(0)}}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+@keyframes fade{0%{opacity:0}100%{opacity:1}}
+@keyframes orbitIn{0%{transform:rotate(-18deg) scale(.6);opacity:0}100%{transform:rotate(-18deg) scale(1);opacity:1}}
+@keyframes load{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes ping{0%{transform:translate(-50%,-50%) scale(.6);opacity:.9}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,10px)}100%{opacity:1;transform:translate(-50%,0)}}
+[data-motion=reduced] *{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:flex-start;justify-content:center;gap:48px;padding:56px 40px;box-sizing:border-box;background:radial-gradient(ellipse at 60% 10%,#0C1834 0%,#02040A 62%);width:max-content;min-width:100%">
+
+  <div style="width:280px;flex:none;display:flex;flex-direction:column;gap:26px;color:#EEF2FA;padding-top:8px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font:500 11px JetBrains Mono,monospace;letter-spacing:.18em;color:#7FB0FF">PROTÓTIPO · v1</div>
+      <div style="font:600 32px/1.05 Space Grotesk,sans-serif;letter-spacing:-.01em">Nexora — Rastreie o céu</div>
+      <div style="font:400 14px/1.55 Manrope,sans-serif;color:#97A3BF;text-wrap:pretty">Acompanhe a ISS, satélites e eventos astronômicos visíveis da sua cidade. Os dois aparelhos estão espelhados — interaja com qualquer um.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.16em;color:#6E7A98;margin-bottom:4px">IR PARA TELA</div>
+      <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="8">
+        <button onClick="{{ j.go }}" style="display:flex;align-items:center;gap:12px;background:{{ j.bg }};border:1px solid {{ j.bd }};color:#DDE4F3;padding:9px 14px;border-radius:12px;font:500 13px Manrope,sans-serif;cursor:pointer;text-align:left;transition:border-color .2s" style-hover="border-color:rgba(140,170,255,.4)">
+          <span style="font:500 10px JetBrains Mono,monospace;color:#6E7A98;width:18px">{{ j.n }}</span>{{ j.label }}
+        </button>
+      </sc-for>
+    </div>
+
+    <sc-for list="{{ panelSegs }}" as="g" hint-placeholder-count="3">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.16em;color:#6E7A98">{{ g.title }}</div>
+        <div style="display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(22,34,70,.5);border:1px solid rgba(140,170,255,.12)">
+          <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3">
+            <button onClick="{{ o.go }}" style="flex:1;border:0;border-radius:9px;padding:9px 4px;font:600 12px Manrope,sans-serif;cursor:pointer;background:{{ o.bg }};color:{{ o.color }};transition:background .2s">{{ o.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+    <div style="font:400 11.5px/1.5 Manrope,sans-serif;color:#6E7A98">Wordmark tipográfico Nexora. Dados de passagens são ilustrativos.</div>
+  </div>
+
+  <sc-for list="{{ phones }}" as="p" hint-placeholder-count="2">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:18px;flex:none">
+  <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.2em;color:#6E7A98">{{ p.label }}</div>
+  <div data-theme="{{ p.theme }}" data-accent="{{ accent }}" data-motion="{{ motion }}" style="width:390px;height:844px;border-radius:{{ outerR }};padding:11px;background:linear-gradient(145deg,#2C3246,#0B0E18 40%,#1C2130);box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06);flex:none">
+    <div style="position:relative;width:390px;height:844px;border-radius:{{ innerR }};overflow:hidden;background:var(--bg);color:var(--ink);transition:background .4s,color .4s">
+
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:var(--stars);background-image:radial-gradient(1px 1px at 22px 40px,#fff,transparent),radial-gradient(1px 1px at 120px 90px,#cfe0ff,transparent),radial-gradient(1.5px 1.5px at 300px 60px,#fff,transparent),radial-gradient(1px 1px at 350px 210px,#fff,transparent),radial-gradient(1px 1px at 60px 300px,#9fbfff,transparent),radial-gradient(1px 1px at 200px 420px,#fff,transparent),radial-gradient(1.5px 1.5px at 330px 520px,#cfe0ff,transparent),radial-gradient(1px 1px at 40px 640px,#fff,transparent),radial-gradient(1px 1px at 260px 720px,#fff,transparent),radial-gradient(1px 1px at 150px 790px,#9fbfff,transparent),radial-gradient(1px 1px at 380px 380px,#fff,transparent),radial-gradient(1px 1px at 95px 180px,#fff,transparent)"></div>
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:var(--stars)"><div style="position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 180px 150px,#fff,transparent),radial-gradient(1px 1px at 280px 330px,#fff,transparent),radial-gradient(1.5px 1.5px at 80px 470px,#fff,transparent),radial-gradient(1px 1px at 350px 680px,#fff,transparent);animation:twinkle 4s ease-in-out infinite"></div></div>
+
+      <sc-if value="{{ isIOS }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 38px;z-index:40;font:600 15px Manrope,sans-serif;color:{{ sbColor }};pointer-events:none">
+          <span>{{ clock }}</span>
+          <div style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px"><span style="width:3px;height:4px;background:currentColor;border-radius:1px"></span><span style="width:3px;height:6px;background:currentColor;border-radius:1px"></span><span style="width:3px;height:8px;background:currentColor;border-radius:1px"></span><span style="width:3px;height:11px;background:currentColor;border-radius:1px"></span></div>
+            <div style="width:25px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.9"><div style="width:75%;height:100%;background:currentColor;border-radius:1.5px"></div></div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isAndroid }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:0;right:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:40;font:500 14px Manrope,sans-serif;color:{{ sbColor }};pointer-events:none">
+          <span>{{ clock }}</span>
+          <div style="position:absolute;left:50%;top:12px;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#000"></div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:0;height:0;border-left:12px solid transparent;border-bottom:12px solid currentColor"></div>
+            <div style="width:9px;height:15px;border-radius:2px;background:currentColor"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSplash }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ skipSplash }}" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 46%,rgba(59,123,255,.24),transparent 55%),#03050C;color:#EEF2FA;cursor:pointer;z-index:20">
+          <div style="position:absolute;inset:0;background-image:radial-gradient(1px 1px at 40px 120px,#fff,transparent),radial-gradient(1px 1px at 330px 160px,#fff,transparent),radial-gradient(1.5px 1.5px at 90px 600px,#cfe0ff,transparent),radial-gradient(1px 1px at 300px 700px,#fff,transparent),radial-gradient(1px 1px at 200px 250px,#fff,transparent);animation:twinkle 3s ease-in-out infinite"></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;width:320px;height:170px">
+            <div style="position:absolute;width:290px;height:98px;border:1px solid rgba(138,182,255,.45);border-radius:50%;animation:orbitIn 1.6s cubic-bezier(.2,.8,.2,1) both"></div>
+            <div style="position:absolute;width:290px;height:98px;transform:rotate(-18deg);animation:fade .8s 1.2s both"><div style="position:absolute;right:20px;top:15px;width:7px;height:7px;border-radius:50%;background:var(--acc2);box-shadow:0 0 12px 3px var(--acc)"></div></div>
+            <div style="font:600 44px/1 Space Grotesk,sans-serif;letter-spacing:.34em;padding-left:.34em;animation:nasaIn 1.4s cubic-bezier(.2,.8,.2,1) both;text-shadow:0 0 32px rgba(59,123,255,.6)">NEXORA</div>
+          </div>
+          <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.32em;color:#8592B4;margin-top:6px;animation:fade 1s .9s both">RASTREIE O CÉU</div>
+          <div style="position:absolute;bottom:96px;width:120px;height:2px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,transparent,var(--acc2));transform-origin:left;animation:load 2.6s ease-in-out both"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:72px 28px 46px;box-sizing:border-box;animation:fade .6s both">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font:600 17px Space Grotesk,sans-serif;letter-spacing:.32em">NEXORA</div>
+            <button onClick="{{ goAuth }}" style="background:none;border:0;color:var(--ink2);font:600 14px Manrope,sans-serif;cursor:pointer;padding:10px 0">Pular</button>
+          </div>
+          <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center">
+            <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 65%);filter:blur(12px)"></div>
+            <div style="position:absolute;width:320px;height:320px;border-radius:50%;border:1px dashed var(--line);animation:spin 40s linear infinite"><div style="position:absolute;left:50%;top:-5px;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:var(--acc2);box-shadow:0 0 14px var(--acc)"></div></div>
+            <div style="position:absolute;width:244px;height:244px;border-radius:50%;border:1px solid var(--line)"></div>
+            <div style="width:176px;height:176px;border-radius:50%;background:{{ slide.grad }};box-shadow:inset -32px -24px 60px rgba(0,0,0,.65),0 0 80px var(--glow);transition:background .6s"></div>
+          </div>
+          <div key="{{ slideIdx }}" style="display:flex;flex-direction:column;gap:12px;animation:fadeUp .5s both;min-height:178px">
+            <div style="font:500 11px JetBrains Mono,monospace;letter-spacing:.2em;color:var(--acc)">{{ slide.tag }}</div>
+            <div style="font:600 33px/1.08 Space Grotesk,sans-serif;letter-spacing:-.015em;text-wrap:balance">{{ slide.title }}</div>
+            <div style="font:400 15px/1.55 Manrope,sans-serif;color:var(--ink2);text-wrap:pretty">{{ slide.body }}</div>
+          </div>
+          <div style="display:flex;gap:6px;margin:18px 0 22px">
+            <sc-for list="{{ dots }}" as="d" hint-placeholder-count="3"><div onClick="{{ d.go }}" style="height:4px;border-radius:4px;width:{{ d.w }};background:{{ d.bg }};transition:all .35s;cursor:pointer"></div></sc-for>
+          </div>
+          <button onClick="{{ nextSlide }}" style="height:56px;border:0;border-radius:18px;background:var(--acc);color:#fff;font:700 16px Manrope,sans-serif;cursor:pointer;box-shadow:0 10px 34px var(--glow),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s" style-active="transform:scale(.97)">{{ ctaLabel }}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+          <button onClick="{{ goLogin }}" style="margin-top:12px;background:none;border:0;color:var(--ink2);font:500 14px Manrope,sans-serif;cursor:pointer;padding:10px">Já tenho conta · <span style="color:var(--ink);font-weight:700">Entrar</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:70px 26px 40px;box-sizing:border-box;overflow-y:auto;scrollbar-width:none;animation:fade .5s both">
+          <div style="position:absolute;top:-130px;right:-130px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 65%);pointer-events:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <button onClick="{{ goWelcome }}" style="width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(12px)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+            <div style="font:600 14px Space Grotesk,sans-serif;letter-spacing:.32em;color:var(--ink2)">NEXORA</div>
+          </div>
+          <div style="margin:26px 0 24px;display:flex;flex-direction:column;gap:8px">
+            <div style="font:600 30px/1.1 Space Grotesk,sans-serif;letter-spacing:-.01em">{{ authTitle }}</div>
+            <div style="font:400 15px/1.5 Manrope,sans-serif;color:var(--ink2)">{{ authSub }}</div>
+          </div>
+          <div style="position:relative;display:flex;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line);margin-bottom:22px">
+            <div style="position:absolute;top:4px;bottom:4px;width:calc(50% - 4px);left:{{ tabLeft }};border-radius:12px;background:var(--acc);box-shadow:0 4px 16px var(--glow);transition:left .32s cubic-bezier(.2,.8,.2,1)"></div>
+            <button onClick="{{ modeLogin }}" style="position:relative;flex:1;height:42px;border:0;background:none;color:{{ loginTabColor }};font:700 14px Manrope,sans-serif;cursor:pointer;transition:color .3s">Entrar</button>
+            <button onClick="{{ modeSignup }}" style="position:relative;flex:1;height:42px;border:0;background:none;color:{{ signupTabColor }};font:700 14px Manrope,sans-serif;cursor:pointer;transition:color .3s">Criar conta</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex;flex-direction:column;gap:7px;animation:fadeUp .3s both">
+                <span style="font:600 12px Manrope,sans-serif;color:var(--ink2)">Nome</span>
+                <input value="{{ name }}" onChange="{{ onName }}" placeholder="Como devemos te chamar?" style="height:54px;border-radius:15px;border:1px solid {{ bdName }};background:var(--card);color:var(--ink);padding:0 16px;font:500 15px Manrope,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s" style-focus="border-color:var(--acc);box-shadow:0 0 0 4px var(--glow)">
+                <sc-if value="{{ errName }}"><span style="font:600 12px Manrope,sans-serif;color:#FF6B7A">{{ errName }}</span></sc-if>
+              </label>
+            </sc-if>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px Manrope,sans-serif;color:var(--ink2)">E-mail</span>
+              <input value="{{ email }}" onChange="{{ onEmail }}" type="email" placeholder="voce@email.com" style="height:54px;border-radius:15px;border:1px solid {{ bdEmail }};background:var(--card);color:var(--ink);padding:0 16px;font:500 15px Manrope,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s" style-focus="border-color:var(--acc);box-shadow:0 0 0 4px var(--glow)">
+              <sc-if value="{{ errEmail }}"><span style="font:600 12px Manrope,sans-serif;color:#FF6B7A">{{ errEmail }}</span></sc-if>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px Manrope,sans-serif;color:var(--ink2)">Senha</span>
+              <div style="position:relative">
+                <input value="{{ pwd }}" onChange="{{ onPwd }}" type="{{ pwdType }}" placeholder="Mínimo de 6 caracteres" style="width:100%;box-sizing:border-box;height:54px;border-radius:15px;border:1px solid {{ bdPwd }};background:var(--card);color:var(--ink);padding:0 72px 0 16px;font:500 15px Manrope,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s" style-focus="border-color:var(--acc);box-shadow:0 0 0 4px var(--glow)">
+                <button onClick="{{ togglePwd }}" type="button" style="position:absolute;right:6px;top:5px;height:44px;padding:0 12px;border:0;border-radius:10px;background:none;color:var(--acc);font:700 12px Manrope,sans-serif;cursor:pointer">{{ pwdToggleLabel }}</button>
+              </div>
+              <sc-if value="{{ errPwd }}"><span style="font:600 12px Manrope,sans-serif;color:#FF6B7A">{{ errPwd }}</span></sc-if>
+            </label>
+            <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}"><div style="display:flex;justify-content:flex-end;margin-top:-4px"><button style="background:none;border:0;color:var(--ink2);font:600 13px Manrope,sans-serif;cursor:pointer;padding:6px 0">Esqueci a senha</button></div></sc-if>
+          </div>
+          <button onClick="{{ submit }}" style="margin-top:22px;min-height:56px;border:0;border-radius:18px;background:var(--acc);color:#fff;font:700 16px Manrope,sans-serif;cursor:pointer;box-shadow:0 10px 34px var(--glow),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s" style-active="transform:scale(.97)">
+            <sc-if value="{{ loading }}"><span style="width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite"></span></sc-if>
+            {{ submitLabel }}
+          </button>
+          <div style="display:flex;align-items:center;gap:12px;margin:22px 0 14px;color:var(--ink3);font:500 12px Manrope,sans-serif"><div style="flex:1;height:1px;background:var(--line)"></div>ou continue com<div style="flex:1;height:1px;background:var(--line)"></div></div>
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ socialLogin }}" style="flex:1;height:52px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 14px Manrope,sans-serif;cursor:pointer;backdrop-filter:blur(12px);transition:border-color .2s" style-hover="border-color:var(--acc)">Apple</button>
+            <button onClick="{{ socialLogin }}" style="flex:1;height:52px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 14px Manrope,sans-serif;cursor:pointer;backdrop-filter:blur(12px);transition:border-color .2s" style-hover="border-color:var(--acc)">Google</button>
+          </div>
+          <div style="margin-top:auto;padding-top:20px;text-align:center;font:400 11.5px/1.5 Manrope,sans-serif;color:var(--ink3)">Ao continuar, você concorda com os Termos de Uso e a Política de Privacidade.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:{{ topPad }} 0 128px;box-sizing:border-box;scrollbar-width:none">
+
+          <sc-if value="{{ tabHome }}">
+            <div key="{{ dashVar }}" style="display:flex;flex-direction:column;gap:20px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.14em;color:var(--ink3)">SÁB · 17 OUT · SÃO PAULO</div>
+                  <div style="font:600 26px/1.1 Space Grotesk,sans-serif;letter-spacing:-.01em">{{ greeting }}</div>
+                </div>
+                <button onClick="{{ goProfile }}" style="width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:linear-gradient(135deg,var(--acc),#0B1A44);color:#fff;font:700 15px Space Grotesk,sans-serif;cursor:pointer">{{ initials }}</button>
+              </div>
+
+              <sc-if value="{{ dashA }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <div style="position:relative;border-radius:30px;padding:20px;background:radial-gradient(circle at 85% 0%,var(--glow),transparent 55%),linear-gradient(165deg,#0F1C42,#060A18);color:#fff;border:1px solid rgba(140,170,255,.2);overflow:hidden;box-shadow:0 20px 50px rgba(4,10,30,.35)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:#A9C2F2">PRÓXIMA PASSAGEM · ISS</div>
+                      <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;background:rgba(80,220,160,.14);color:#7CE8B8;font:700 11px Manrope,sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:#7CE8B8"></span>Visível</div>
+                    </div>
+                    <div style="position:relative;width:212px;height:212px;margin:14px auto 6px">
+                      <svg width="212" height="212" viewBox="0 0 212 212" style="position:absolute;inset:0;transform:rotate(-90deg)">
+                        <circle cx="106" cy="106" r="94" fill="none" stroke="rgba(140,170,255,.14)" stroke-width="3"></circle>
+                        <circle cx="106" cy="106" r="94" fill="none" stroke="var(--acc2)" stroke-width="3" stroke-linecap="round" stroke-dasharray="590.6" stroke-dashoffset="{{ ringOffset }}" style="transition:stroke-dashoffset 1s linear;filter:drop-shadow(0 0 6px var(--acc))"></circle>
+                      </svg>
+                      <div style="position:absolute;inset:18px;border-radius:50%;border:1px dashed rgba(140,170,255,.16)"></div>
+                      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+                        <div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">começa em</div>
+                        <div style="font:500 34px/1 JetBrains Mono,monospace;letter-spacing:-.02em;font-variant-numeric:tabular-nums">{{ countdown }}</div>
+                        <div style="font:600 13px Manrope,sans-serif;color:#fff">Hoje · 19:42</div>
+                      </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+                      <div style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06)"><span style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Altura máx.</span><span style="font:600 16px Space Grotesk,sans-serif">64°</span></div>
+                      <div style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06)"><span style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Direção</span><span style="font:600 16px Space Grotesk,sans-serif">NO → SE</span></div>
+                      <div style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06)"><span style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Duração</span><span style="font:600 16px Space Grotesk,sans-serif">6 min</span></div>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:16px">
+                      <button onClick="{{ seeIss }}" style="flex:1;height:50px;border:0;border-radius:16px;background:var(--acc);color:#fff;font:700 14px Manrope,sans-serif;cursor:pointer;box-shadow:0 8px 24px var(--glow);transition:transform .15s" style-active="transform:scale(.97)">Ver no céu</button>
+                      <button onClick="{{ toggleIssAlert }}" style="height:50px;padding:0 16px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:{{ issAlertBg }};color:#fff;font:700 14px Manrope,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .25s">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ issAlertFill }}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg>{{ issAlertLabel }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                    <sc-for list="{{ shortcuts }}" as="s" hint-placeholder-count="4">
+                      <button onClick="{{ s.go }}" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;color:var(--ink);cursor:pointer;padding:0">
+                        <div style="width:64px;height:64px;border-radius:21px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);transition:transform .2s,border-color .2s" style-hover="border-color:var(--acc);transform:translateY(-2px)">
+                          <div style="width:20px;height:20px;border-radius:{{ s.r }};border:2px solid var(--acc);box-sizing:border-box;transform:{{ s.t }}"></div>
+                        </div>
+                        <span style="font:600 11.5px Manrope,sans-serif;color:var(--ink2)">{{ s.label }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div style="border-radius:24px;padding:16px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:12px">
+                      <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.14em;color:var(--ink3)">LUA HOJE</div>
+                      <div style="position:relative;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#F4F1EA,#B9B4AA);overflow:hidden;box-shadow:0 0 24px rgba(220,225,255,.25)"><div style="position:absolute;inset:0;border-radius:50%;background:#0A0F20;transform:translateX(52%);opacity:.94"></div></div>
+                      <div style="display:flex;flex-direction:column;gap:2px"><div style="font:600 15px Space Grotesk,sans-serif">Quarto crescente</div><div style="font:500 12px Manrope,sans-serif;color:var(--ink2)">46% iluminada</div></div>
+                    </div>
+                    <div style="border-radius:24px;padding:16px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:12px">
+                      <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.14em;color:var(--ink3)">CÉU À NOITE</div>
+                      <div style="font:600 32px/1 Space Grotesk,sans-serif;color:var(--acc)">8,6<span style="font:500 14px Manrope,sans-serif;color:var(--ink3)"> /10</span></div>
+                      <div style="display:flex;flex-direction:column;gap:6px">
+                        <div style="height:5px;border-radius:5px;background:var(--line);overflow:hidden"><div style="width:86%;height:100%;background:var(--acc);border-radius:5px"></div></div>
+                        <div style="font:500 12px Manrope,sans-serif;color:var(--ink2)">Nuvens 12% · Ótimo</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:600 18px Space Grotesk,sans-serif">Próximos eventos</div><button onClick="{{ goEvents }}" style="background:none;border:0;color:var(--acc);font:700 13px Manrope,sans-serif;cursor:pointer;padding:6px 0">Ver todos</button></div>
+                    <div style="display:flex;gap:12px;overflow-x:auto;margin:0 -20px;padding:0 20px 4px;scrollbar-width:none">
+                      <sc-for list="{{ eventsTop }}" as="e" hint-placeholder-count="3">
+                        <button onClick="{{ goEvents }}" style="flex:none;width:200px;text-align:left;border-radius:22px;padding:16px;background:var(--card);border:1px solid var(--line);color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(12px)">
+                          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.1em;color:var(--acc)">{{ e.tag }}</span><span style="font:500 11px Manrope,sans-serif;color:var(--ink3)">{{ e.when }}</span></div>
+                          <div style="font:600 16px/1.2 Space Grotesk,sans-serif">{{ e.title }}</div>
+                          <div style="font:500 12px/1.4 Manrope,sans-serif;color:var(--ink2)">{{ e.short }}</div>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ dashB }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <div style="position:relative;height:340px;border-radius:30px;overflow:hidden;background:radial-gradient(circle at 50% 55%,rgba(59,123,255,.25),transparent 60%),linear-gradient(180deg,#070C1E,#03050C);border:1px solid rgba(140,170,255,.2);color:#fff">
+                    <div style="position:absolute;inset:0;background-image:radial-gradient(1px 1px at 30px 40px,#fff,transparent),radial-gradient(1px 1px at 300px 70px,#fff,transparent),radial-gradient(1px 1px at 60px 290px,#cfe0ff,transparent),radial-gradient(1px 1px at 320px 260px,#fff,transparent),radial-gradient(1px 1px at 180px 30px,#fff,transparent)"></div>
+                    <div style="position:absolute;left:50%;top:54%;width:300px;height:110px;margin:-55px 0 0 -150px;border-radius:50%;border:1px solid rgba(138,182,255,.35);transform:rotate(-20deg)"></div>
+                    <div style="position:absolute;left:{{ orbX }};top:{{ orbY }};width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--acc2);box-shadow:0 0 14px 4px var(--acc);z-index:{{ orbZ }};transition:left 1s linear,top 1s linear"></div>
+                    <div style="position:absolute;left:50%;top:54%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4D8DFF,#163C8C 45%,#061433 80%);box-shadow:inset -22px -18px 44px rgba(0,0,0,.6),0 0 60px rgba(59,123,255,.45);z-index:2"><div style="position:absolute;left:62px;top:84px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.2)"></div></div>
+                    <div style="position:absolute;left:18px;top:18px;right:18px;display:flex;justify-content:space-between;z-index:3">
+                      <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:20px;background:rgba(5,10,25,.55);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.1);font:700 11px Manrope,sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:#FF5D6C;box-shadow:0 0 8px #FF5D6C"></span>ISS ao vivo</div>
+                      <div style="font:500 11px JetBrains Mono,monospace;color:#A9C2F2;padding-top:7px">ÓRBITA {{ orbitNo }}</div>
+                    </div>
+                    <div style="position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;z-index:3">
+                      <div style="padding:10px 12px;border-radius:14px;background:rgba(5,10,25,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)"><div style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Latitude</div><div style="font:500 14px JetBrains Mono,monospace">{{ issLat }}</div></div>
+                      <div style="padding:10px 12px;border-radius:14px;background:rgba(5,10,25,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)"><div style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Longitude</div><div style="font:500 14px JetBrains Mono,monospace">{{ issLon }}</div></div>
+                      <div style="padding:10px 12px;border-radius:14px;background:rgba(5,10,25,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)"><div style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Visível em</div><div style="font:500 14px JetBrains Mono,monospace">{{ countdownShort }}</div></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:600 18px Space Grotesk,sans-serif">Passagens hoje à noite</div><span style="font:500 12px Manrope,sans-serif;color:var(--ink3)">5 visíveis</span></div>
+                    <sc-for list="{{ passes }}" as="ps" hint-placeholder-count="4">
+                      <button onClick="{{ ps.go }}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;background:var(--card);border:1px solid var(--line);color:var(--ink);cursor:pointer;text-align:left;backdrop-filter:blur(12px);transition:border-color .2s" style-hover="border-color:var(--acc)">
+                        <div style="font:500 15px JetBrains Mono,monospace;width:52px">{{ ps.time }}</div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                          <div style="display:flex;justify-content:space-between"><span style="font:700 14px Manrope,sans-serif">{{ ps.name }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink3)">{{ ps.el }} · mag {{ ps.mag }}</span></div>
+                          <div style="height:4px;border-radius:4px;background:var(--line);overflow:hidden"><div style="height:100%;width:{{ ps.w }};background:var(--acc);border-radius:4px"></div></div>
+                        </div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ dashC }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <div style="border-radius:30px;padding:22px;background:linear-gradient(180deg,#0B1636,#060A18);border:1px solid rgba(140,170,255,.2);color:#fff;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+                    <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 65%)"></div>
+                    <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:#A9C2F2">ÍNDICE DE OBSERVAÇÃO</div>
+                    <div style="display:flex;align-items:flex-end;gap:12px"><div style="font:600 72px/0.9 Space Grotesk,sans-serif;letter-spacing:-.03em">8,6</div><div style="font:600 15px/1.35 Manrope,sans-serif;color:#C9D6F2;padding-bottom:6px">Ótima noite<br>para observar</div></div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                      <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Nuvens</span><span style="font:600 16px Space Grotesk,sans-serif">12%</span></div>
+                      <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Lua</span><span style="font:600 16px Space Grotesk,sans-serif">46%</span></div>
+                      <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Pôr do sol</span><span style="font:600 16px Space Grotesk,sans-serif">18:12</span></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <div style="font:600 18px Space Grotesk,sans-serif;margin-bottom:10px">Hoje à noite</div>
+                    <sc-for list="{{ timeline }}" as="tl" hint-placeholder-count="6">
+                      <div style="display:flex;gap:14px;align-items:stretch">
+                        <div style="width:46px;font:500 13px JetBrains Mono,monospace;color:var(--ink2);padding-top:14px">{{ tl.time }}</div>
+                        <div style="position:relative;width:14px;display:flex;justify-content:center">
+                          <div style="position:absolute;top:0;bottom:0;width:1px;background:var(--line)"></div>
+                          <div style="position:relative;margin-top:17px;width:10px;height:10px;border-radius:50%;background:{{ tl.dot }};box-shadow:{{ tl.glow }}"></div>
+                        </div>
+                        <button onClick="{{ tl.go }}" style="flex:1;text-align:left;margin:4px 0;padding:12px 14px;border-radius:16px;background:{{ tl.bg }};border:1px solid var(--line);color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:3px">
+                          <span style="font:700 14px Manrope,sans-serif">{{ tl.title }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ tl.sub }}</span>
+                        </button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabTrack }}">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px">
+                <div style="font:600 28px Space Grotesk,sans-serif;letter-spacing:-.01em">Rastrear</div>
+                <div style="display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:20px;background:var(--card);border:1px solid var(--line);font:700 11px Manrope,sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:#FF5D6C;box-shadow:0 0 8px #FF5D6C"></span>AO VIVO · {{ clockSec }}</div>
+              </div>
+              <div style="display:flex;gap:8px;overflow-x:auto;margin:0 -20px;padding:0 20px;scrollbar-width:none">
+                <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+                  <button onClick="{{ f.go }}" style="flex:none;height:38px;padding:0 16px;border-radius:20px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.color }};font:700 13px Manrope,sans-serif;cursor:pointer;transition:all .2s">{{ f.label }}</button>
+                </sc-for>
+              </div>
+              <div style="position:relative;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(59,123,255,.12),transparent 70%),linear-gradient(180deg,#081028,#04070F);box-shadow:0 0 0 1px rgba(140,170,255,.18),0 20px 60px rgba(4,10,30,.4);overflow:hidden">
+                <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(138,182,255,.22),transparent 60deg);animation:spin 6s linear infinite"></div>
+                <div style="position:absolute;inset:59px;border-radius:50%;border:1px solid rgba(140,170,255,.16)"></div>
+                <div style="position:absolute;inset:117px;border-radius:50%;border:1px solid rgba(140,170,255,.16)"></div>
+                <div style="position:absolute;left:175px;top:0;bottom:0;width:1px;background:rgba(140,170,255,.1)"></div>
+                <div style="position:absolute;top:175px;left:0;right:0;height:1px;background:rgba(140,170,255,.1)"></div>
+                <div style="position:absolute;left:181px;top:63px;font:500 9px JetBrains Mono,monospace;color:#6E7FA8">30°</div>
+                <div style="position:absolute;left:181px;top:121px;font:500 9px JetBrains Mono,monospace;color:#6E7FA8">60°</div>
+                <div style="position:absolute;left:0;right:0;top:8px;text-align:center;font:600 11px JetBrains Mono,monospace;color:#A9C2F2">N</div>
+                <div style="position:absolute;left:0;right:0;bottom:8px;text-align:center;font:600 11px JetBrains Mono,monospace;color:#6E7FA8">S</div>
+                <div style="position:absolute;left:10px;top:168px;font:600 11px JetBrains Mono,monospace;color:#6E7FA8">O</div>
+                <div style="position:absolute;right:10px;top:168px;font:600 11px JetBrains Mono,monospace;color:#6E7FA8">L</div>
+                <sc-for list="{{ sats }}" as="s" hint-placeholder-count="5">
+                  <div style="position:absolute;left:{{ s.mx }};top:{{ s.my }};width:{{ s.len }};height:0;border-top:1px dashed {{ s.track }};transform:translate(-50%,-50%) rotate({{ s.ang }});opacity:{{ s.op }};transition:opacity .3s"></div>
+                </sc-for>
+                <sc-for list="{{ sats }}" as="s" hint-placeholder-count="5">
+                  <button onClick="{{ s.select }}" style="position:absolute;left:{{ s.x }};top:{{ s.y }};width:44px;height:44px;margin:-22px 0 0 -22px;border:0;background:none;cursor:pointer;opacity:{{ s.op }};transition:{{ s.tr }};padding:0">
+                    <sc-if value="{{ s.sel }}"><span style="position:absolute;left:50%;top:50%;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--acc2);animation:ping 1.6s ease-out infinite"></span></sc-if>
+                    <span style="position:absolute;left:50%;top:50%;width:{{ s.size }};height:{{ s.size }};transform:translate(-50%,-50%);border-radius:50%;background:{{ s.color }};box-shadow:0 0 10px 2px {{ s.color }}"></span>
+                    <span style="position:absolute;left:34px;top:8px;white-space:nowrap;font:700 10.5px Manrope,sans-serif;color:#E6EEFF;opacity:{{ s.labelOp }};transition:opacity .3s;text-shadow:0 1px 4px #000">{{ s.name }}</span>
+                  </button>
+                </sc-for>
+                <div style="position:absolute;left:175px;top:175px;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;opacity:.6"></div>
+              </div>
+
+              <div key="{{ selId }}" style="border-radius:26px;padding:18px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:14px;animation:fadeUp .35s both">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.12em;color:var(--acc)">{{ sel.typeLabel }}</span><span style="font:600 20px/1.15 Space Grotesk,sans-serif">{{ sel.full }}</span></div>
+                  <button onClick="{{ toggleSelAlert }}" style="flex:none;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:{{ selAlertBg }};color:{{ selAlertColor }};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s" style-active="transform:scale(.9)"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{ selAlertFill }}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg></button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Elevação</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.el }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Azimute</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.az }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Altitude</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.alt }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Brilho</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.mag }}</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line)"><span style="font:500 13px Manrope,sans-serif;color:var(--ink2)">Próxima passagem visível</span><span style="font:700 13px Manrope,sans-serif">{{ sel.next }}</span></div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font:600 16px Space Grotesk,sans-serif;margin:4px 0 4px">No seu céu agora</div>
+                <sc-for list="{{ satList }}" as="s" hint-placeholder-count="5">
+                  <button onClick="{{ s.select }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:{{ s.rowBg }};border:1px solid {{ s.rowBd }};color:var(--ink);cursor:pointer;text-align:left;transition:all .2s">
+                    <span style="width:10px;height:10px;border-radius:50%;background:{{ s.color }};box-shadow:0 0 8px {{ s.color }}"></span>
+                    <span style="flex:1;font:700 14px Manrope,sans-serif">{{ s.name }}</span>
+                    <span style="font:500 12px JetBrains Mono,monospace;color:var(--ink2)">{{ s.elTxt }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabEvents }}">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;flex-direction:column;gap:4px;padding-top:8px"><div style="font:600 28px Space Grotesk,sans-serif;letter-spacing:-.01em">Eventos no céu</div><div style="font:500 13px Manrope,sans-serif;color:var(--ink2)">Visíveis de São Paulo · próximos 10 dias</div></div>
+              <div style="display:flex;gap:4px;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line)">
+                <sc-for list="{{ evFilters }}" as="f" hint-placeholder-count="4">
+                  <button onClick="{{ f.go }}" style="flex:1;height:38px;border:0;border-radius:12px;background:{{ f.bg }};color:{{ f.color }};font:700 12.5px Manrope,sans-serif;cursor:pointer;transition:all .2s">{{ f.label }}</button>
+                </sc-for>
+              </div>
+              <sc-for list="{{ eventsList }}" as="e" hint-placeholder-count="5">
+                <div style="display:flex;gap:14px;padding:16px;border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);animation:fadeUp .35s both">
+                  <div style="flex:none;width:52px;height:60px;border-radius:16px;background:{{ e.dateBg }};color:{{ e.dateColor }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font:600 20px/1 Space Grotesk,sans-serif">{{ e.day }}</span><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.1em">{{ e.mon }}</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+                    <div style="display:flex;justify-content:space-between;gap:8px"><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.1em;color:var(--acc);padding-top:3px">{{ e.tag }}</span>
+                      <button onClick="{{ e.toggle }}" style="flex:none;width:36px;height:36px;margin:-6px -6px 0 0;border-radius:12px;border:0;background:{{ e.saveBg }};color:{{ e.saveColor }};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s" style-active="transform:scale(.88)"><svg width="16" height="16" viewBox="0 0 24 24" fill="{{ e.saveFill }}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg></button>
+                    </div>
+                    <div style="font:600 17px/1.2 Space Grotesk,sans-serif;margin-top:-6px">{{ e.title }}</div>
+                    <div style="font:500 13px/1.45 Manrope,sans-serif;color:var(--ink2);text-wrap:pretty">{{ e.desc }}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+                      <span style="font:600 12px Manrope,sans-serif">{{ e.time }}</span>
+                      <div style="display:flex;align-items:center;gap:6px"><span style="font:500 11px Manrope,sans-serif;color:var(--ink3)">Visibilidade</span><div style="display:flex;gap:2px"><sc-for list="{{ e.bars }}" as="b" hint-placeholder-count="5"><span style="width:5px;height:12px;border-radius:2px;background:{{ b.bg }}"></span></sc-for></div></div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabProfile }}">
+            <div style="display:flex;flex-direction:column;gap:18px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px"><div style="font:600 28px Space Grotesk,sans-serif;letter-spacing:-.01em">Perfil</div></div>
+              <div style="position:relative;border-radius:28px;padding:20px;background:radial-gradient(circle at 100% 0%,var(--glow),transparent 60%),linear-gradient(165deg,#0F1C42,#060A18);border:1px solid rgba(140,170,255,.2);color:#fff;display:flex;flex-direction:column;gap:18px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:14px">
+                  <div style="position:relative;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#0B1A44);display:flex;align-items:center;justify-content:center;font:700 22px Space Grotesk,sans-serif;box-shadow:0 0 0 3px rgba(255,255,255,.08),0 0 30px var(--glow)">{{ initials }}</div>
+                  <div style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font:600 20px Space Grotesk,sans-serif">{{ displayName }}</span><span style="font:500 13px Manrope,sans-serif;color:#A9C2F2;overflow:hidden;text-overflow:ellipsis">{{ displayEmail }}</span><span style="font:600 11px JetBrains Mono,monospace;color:#C9D6F2;margin-top:2px">◎ SÃO PAULO, BR</span></div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <div style="padding:12px;border-radius:16px;background:rgba(255,255,255,.06)"><div style="font:600 22px Space Grotesk,sans-serif">42</div><div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Passagens vistas</div></div>
+                  <div style="padding:12px;border-radius:16px;background:rgba(255,255,255,.06)"><div style="font:600 22px Space Grotesk,sans-serif">{{ alertCount }}</div><div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Alertas ativos</div></div>
+                  <div style="padding:12px;border-radius:16px;background:rgba(255,255,255,.06)"><div style="font:600 22px Space Grotesk,sans-serif">{{ savedCount }}</div><div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Eventos salvos</div></div>
+                </div>
+              </div>
+
+              <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:var(--ink3);margin:4px 4px -8px">NOTIFICAÇÕES</div>
+              <div style="border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);overflow:hidden">
+                <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="2">
+                  <button onClick="{{ t.toggle }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);cursor:pointer;text-align:left">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:700 14px Manrope,sans-serif">{{ t.label }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ t.sub }}</span></div>
+                    <div style="flex:none;width:50px;height:30px;border-radius:20px;background:{{ t.bg }};position:relative;transition:background .25s"><div style="position:absolute;top:3px;left:{{ t.x }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:left .25s cubic-bezier(.2,.8,.2,1)"></div></div>
+                  </button>
+                </sc-for>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+                  <span style="font:700 14px Manrope,sans-serif">Avisar com antecedência</span>
+                  <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--line)">
+                    <sc-for list="{{ leadOpts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.go }}" style="flex:1;height:36px;border:0;border-radius:10px;background:{{ o.bg }};color:{{ o.color }};font:700 13px Manrope,sans-serif;cursor:pointer;transition:all .2s;box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for>
+                  </div>
+                </div>
+              </div>
+
+              <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:var(--ink3);margin:4px 4px -8px">APARÊNCIA</div>
+              <div style="border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);overflow:hidden">
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)">
+                  <span style="font:700 14px Manrope,sans-serif">Tema</span>
+                  <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--line)">
+                    <sc-for list="{{ themeOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="flex:1;height:36px;border:0;border-radius:10px;background:{{ o.bg }};color:{{ o.color }};font:700 13px Manrope,sans-serif;cursor:pointer;transition:all .2s;box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for>
+                  </div>
+                </div>
+                <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)">
+                  <span style="font:700 14px Manrope,sans-serif">Cor de destaque</span>
+                  <div style="display:flex;gap:10px">
+                    <sc-for list="{{ accentOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="width:30px;height:30px;border-radius:50%;border:0;background:{{ o.c }};cursor:pointer;box-shadow:{{ o.ring }};transition:box-shadow .2s"></button></sc-for>
+                  </div>
+                </div>
+                <sc-for list="{{ toggles2 }}" as="t" hint-placeholder-count="1">
+                  <button onClick="{{ t.toggle }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border:0;background:none;color:var(--ink);cursor:pointer;text-align:left">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:700 14px Manrope,sans-serif">{{ t.label }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ t.sub }}</span></div>
+                    <div style="flex:none;width:50px;height:30px;border-radius:20px;background:{{ t.bg }};position:relative;transition:background .25s"><div style="position:absolute;top:3px;left:{{ t.x }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:left .25s cubic-bezier(.2,.8,.2,1)"></div></div>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:var(--ink3);margin:4px 4px -8px">CONTA</div>
+              <div style="border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);overflow:hidden">
+                <sc-for list="{{ accountRows }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 16px;border-bottom:1px solid var(--line)"><span style="font:700 14px Manrope,sans-serif">{{ r.label }}</span><span style="font:500 13px Manrope,sans-serif;color:var(--ink2)">{{ r.val }} ›</span></div>
+                </sc-for>
+                <button onClick="{{ logout }}" style="width:100%;padding:15px 16px;border:0;background:none;color:#FF5D6C;font:700 14px Manrope,sans-serif;cursor:pointer;text-align:left">Sair da conta</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="position:absolute;top:0;left:0;right:0;height:{{ topPad }};background:linear-gradient(180deg,var(--bg) 55%,transparent);pointer-events:none;z-index:5"></div>
+
+        <sc-if value="{{ toast }}">
+          <div style="position:absolute;left:50%;bottom:118px;z-index:30;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:16px;background:var(--solid);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.3);font:700 13px Manrope,sans-serif;color:var(--ink);white-space:nowrap;animation:toastIn .3s both;transform:translateX(-50%)"><span style="width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)"></span>{{ toast }}</div>
+        </sc-if>
+
+        <div style="position:absolute;left:16px;right:16px;bottom:{{ navBottom }};height:70px;border-radius:26px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:20">
+          <button onClick="{{ tabGo.home }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.home }};color:{{ navC.home }};cursor:pointer;transition:all .25s">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg><span style="font:700 10.5px Manrope,sans-serif">Início</span>
+          </button>
+          <button onClick="{{ tabGo.track }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.track }};color:{{ navC.track }};cursor:pointer;transition:all .25s">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><circle cx="12" cy="12" r="1" fill="currentColor"></circle></svg><span style="font:700 10.5px Manrope,sans-serif">Rastrear</span>
+          </button>
+          <button onClick="{{ tabGo.events }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.events }};color:{{ navC.events }};cursor:pointer;transition:all .25s">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg><span style="font:700 10.5px Manrope,sans-serif">Eventos</span>
+          </button>
+          <button onClick="{{ tabGo.profile }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.profile }};color:{{ navC.profile }};cursor:pointer;transition:all .25s">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.8"></circle><path d="M4.5 20c1.2-3.6 4-5.3 7.5-5.3s6.3 1.7 7.5 5.3" stroke-linecap="round"></path></svg><span style="font:700 10.5px Manrope,sans-serif">Perfil</span>
+          </button>
+        </div>
+      </sc-if>
+
+      <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:{{ indW }};height:5px;border-radius:5px;background:var(--ink);opacity:.55;z-index:45;pointer-events:none"></div>
+    </div>
+  </div>
+  </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;dashboard&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;'A'|'B'|'C'&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ios&quot;,&quot;android&quot;],&quot;default&quot;:&quot;ios&quot;,&quot;tsType&quot;:&quot;'ios'|'android'&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;blue&quot;,&quot;cyan&quot;,&quot;violet&quot;],&quot;default&quot;:&quot;blue&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Marca&quot;}}">
+const SATS=[
+ {id:'iss',name:'ISS',full:'Estação Espacial Internacional',type:'est',az0:300,span:150,period:46,off:.12,alt:'418 km',mag:'−3,4',next:'Hoje, 19:42',size:'11px'},
+ {id:'tg',name:'Tiangong',full:'Estação Espacial Tiangong',type:'est',az0:205,span:125,period:62,off:.55,alt:'385 km',mag:'−1,8',next:'Hoje, 21:07',size:'8px'},
+ {id:'hst',name:'Hubble',full:'Telescópio Espacial Hubble',type:'tel',az0:250,span:165,period:74,off:.3,alt:'515 km',mag:'+1,6',next:'Amanhã, 05:12',size:'8px'},
+ {id:'sl',name:'Starlink G6-31',full:'Trem de satélites Starlink',type:'sl',az0:25,span:140,period:38,off:.78,alt:'550 km',mag:'+2,9',next:'Hoje, 20:15',size:'7px'},
+ {id:'noaa',name:'NOAA-20',full:'Satélite meteorológico NOAA-20',type:'met',az0:170,span:172,period:54,off:.42,alt:'824 km',mag:'+4,1',next:'Hoje, 22:48',size:'7px'},
+];
+const TYPE={est:'ESTAÇÃO ESPACIAL',tel:'TELESCÓPIO',sl:'CONSTELAÇÃO',met:'METEOROLÓGICO'};
+const COLORS={iss:'#8AB6FF',tg:'#F2C46B',hst:'#C6A4FF',sl:'#7FE3D0',noaa:'#FF9C8A'};
+const EVENTS=[
+ {id:'e1',cat:'sat',day:'17',mon:'OUT',tag:'SATÉLITE',title:'Passagem brilhante da ISS',desc:'Atravessa o céu de noroeste a sudeste, mais brilhante que qualquer estrela.',time:'Hoje · 19:42',when:'Hoje',short:'19:42 · 6 min · 64°',vis:5,today:true},
+ {id:'e2',cat:'sat',day:'17',mon:'OUT',tag:'SATÉLITE',title:'Trem Starlink',desc:'Fila de pontos luminosos logo após o anoitecer, a oeste.',time:'Hoje · 20:15',when:'Hoje',short:'20:15 · baixa a oeste',vis:3,today:true},
+ {id:'e3',cat:'lua',day:'18',mon:'OUT',tag:'LUA',title:'Quarto crescente',desc:'Melhor momento para ver crateras ao longo do terminador com binóculos.',time:'Amanhã · 18:30',when:'Amanhã',short:'Crateras no terminador',vis:4},
+ {id:'e4',cat:'met',day:'21',mon:'OUT',tag:'METEOROS',title:'Pico das Orionídeas',desc:'Até 20 meteoros por hora, restos do cometa Halley. Melhor após 01h.',time:'21–22 out · 01:00',when:'Ter, 21',short:'Até 20 meteoros/h',vis:4},
+ {id:'e5',cat:'lua',day:'26',mon:'OUT',tag:'LUA',title:'Lua cheia do Caçador',desc:'Nasce a leste ao pôr do sol, com tom alaranjado perto do horizonte.',time:'26 out · 18:20',when:'Seg, 26',short:'Nasce ao pôr do sol',vis:5},
+];
+const SLIDES=[
+ {tag:'01 · RASTREIE',title:'A Estação Espacial passa sobre você',body:'Saiba exatamente quando e onde olhar para ver a ISS e outros satélites cruzando o céu.',grad:'radial-gradient(circle at 35% 30%,#5C97FF,#1A3F94 45%,#061433 80%)'},
+ {tag:'02 · OBSERVE',title:'Eventos do céu, no seu horário',body:'Chuvas de meteoros, fases da Lua e planetas em destaque — filtrados para a sua localização.',grad:'radial-gradient(circle at 35% 30%,#F6F2EA,#B9B4AA 50%,#4A4842 85%)'},
+ {tag:'03 · NÃO PERCA',title:'Alertas antes de acontecer',body:'Receba um aviso minutos antes da passagem, com direção e altura no céu.',grad:'radial-gradient(circle at 35% 30%,#B9A8FF,#4B37B8 45%,#120A3A 80%)'},
+];
+const pad=n=>String(n).padStart(2,'0');
+const DIRS=['N','NE','L','SE','S','SO','O','NO'];
+
+class Component extends DCLogic {
+  state={screen:'splash',slide:0,authMode:'login',name:'',email:'',pwd:'',showPwd:false,errs:{},loading:false,
+    tab:'home',dashVar:null,platform:null,layout:'both',selId:'iss',filter:'all',evFilter:'all',
+    alerts:{iss:true},saved:{e1:true,e4:true},notifPass:true,notifEvents:true,lead:10,accent:null,reduce:false,toast:'',t:0};
+  componentDidMount(){
+    this.t0=Date.now(); this.passAt=this.t0+(2*3600+14*60+33)*1000;
+    this.iv=setInterval(()=>this.setState({t:(Date.now()-this.t0)/1000}),1000);
+    this.armSplash();
+  }
+  componentWillUnmount(){clearInterval(this.iv);clearTimeout(this.sp);clearTimeout(this.tt);}
+  armSplash(){clearTimeout(this.sp);this.sp=setTimeout(()=>{if(this.state.screen==='splash')this.setState({screen:'welcome',slide:0});},2900);}
+  showToast(m){clearTimeout(this.tt);this.setState({toast:m});this.tt=setTimeout(()=>this.setState({toast:''}),2200);}
+  go(screen,extra){this.setState({screen,...(extra||{})});if(screen==='splash')this.armSplash();}
+  submit(){
+    const s=this.state,e={};
+    if(s.authMode==='signup'&&!s.name.trim())e.name='Informe seu nome';
+    if(!/^\S+@\S+\.\S+$/.test(s.email))e.email='E-mail inválido';
+    if(s.pwd.length<6)e.pwd='A senha precisa de 6+ caracteres';
+    this.setState({errs:e});
+    if(Object.keys(e).length)return;
+    this.setState({loading:true});
+    setTimeout(()=>this.setState({loading:false,screen:'app',tab:'home'}),900);
+  }
+  satPos(s,t){
+    const C=175,R=165,rad=d=>d*Math.PI/180;
+    const a=rad(s.az0),b=rad(s.az0+s.span);
+    const x1=C+R*Math.sin(a),y1=C-R*Math.cos(a),x2=C+R*Math.sin(b),y2=C-R*Math.cos(b);
+    const step=1/s.period,p=((t/s.period)+s.off)%1;
+    const x=x1+(x2-x1)*p,y=y1+(y2-y1)*p;
+    const d=Math.hypot(x-C,y-C),el=Math.max(0,Math.round(90*(1-d/R)));
+    let az=Math.round((Math.atan2(x-C,C-y)*180/Math.PI+360)%360);
+    return {x,y,el,az,wrap:p<step*1.01,mx:(x1+x2)/2,my:(y1+y2)/2,len:Math.hypot(x2-x1,y2-y1),ang:Math.atan2(y2-y1,x2-x1)*180/Math.PI};
+  }
+  renderVals(){
+    const s=this.state,P=this.props,set=o=>()=>this.setState(o);
+    const dashVar=s.dashVar||P.dashboard||'A',platform=s.platform||P.platform||'ios',accent=s.accent||P.accent||'blue';
+    const now=new Date(),clock=`${now.getHours()}:${pad(now.getMinutes())}`;
+    const left=Math.max(0,Math.round(((this.passAt||Date.now()+8073000)-Date.now())/1000));
+    const countdown=`${pad(Math.floor(left/3600))}:${pad(Math.floor(left%3600/60))}:${pad(left%60)}`;
+    const isIOS=platform==='ios';
+    const ACC={blue:'#3B7BFF',cyan:'#0E9BD0',violet:'#6F55F5'};
+    const segOpt=(label,on,go)=>({label,go,bg:on?'#3B7BFF':'transparent',color:on?'#fff':'#A2ADC8'});
+    const jumpDefs=[['Splash',()=>this.go('splash')],['Boas-vindas',()=>this.go('welcome',{slide:0})],['Login',()=>this.go('auth',{authMode:'login',errs:{}})],['Cadastro',()=>this.go('auth',{authMode:'signup',errs:{}})],['Início',()=>this.go('app',{tab:'home'})],['Rastrear',()=>this.go('app',{tab:'track'})],['Eventos',()=>this.go('app',{tab:'events'})],['Perfil',()=>this.go('app',{tab:'profile'})]];
+    const curIdx=s.screen==='splash'?0:s.screen==='welcome'?1:s.screen==='auth'?(s.authMode==='login'?2:3):({home:4,track:5,events:6,profile:7})[s.tab];
+    const jumps=jumpDefs.map(([label,go],i)=>({n:pad(i+1),label,go,bg:i===curIdx?'rgba(59,123,255,.18)':'rgba(22,34,70,.35)',bd:i===curIdx?'rgba(59,123,255,.6)':'rgba(140,170,255,.12)'}));
+    const panelSegs=[
+      {title:'DASHBOARD',opts:[['A · Contagem','A'],['B · Órbita','B'],['C · Noite','C']].map(([l,v])=>segOpt(l,dashVar===v,()=>this.setState({dashVar:v,screen:'app',tab:'home'})))},
+      {title:'PLATAFORMA',opts:[['iOS','ios'],['Android','android']].map(([l,v])=>segOpt(l,platform===v,set({platform:v})))},
+      {title:'EXIBIÇÃO',opts:[['Lado a lado','both'],['Escuro','dark'],['Claro','light']].map(([l,v])=>segOpt(l,s.layout===v,set({layout:v})))},
+    ];
+    const phones=s.layout==='both'?[{theme:'dark',label:'MODO ESCURO'},{theme:'light',label:'MODO CLARO'}]:[{theme:s.layout,label:s.layout==='dark'?'MODO ESCURO':'MODO CLARO'}];
+    const slide=SLIDES[s.slide];
+    const displayName=s.name.trim()||'Marina Alves',first=displayName.split(' ')[0];
+    const initials=displayName.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+    const h=now.getHours(),greeting=`${h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}, ${first}`;
+    // sats
+    const t=s.t, inF=x=>s.filter==='all'||x.type===s.filter;
+    const pos={};SATS.forEach(x=>pos[x.id]=this.satPos(x,t));
+    const sats=SATS.map(x=>{const q=pos[x.id],sel=x.id===s.selId;return{name:x.name,sel,x:q.x+'px',y:q.y+'px',mx:q.mx+'px',my:q.my+'px',len:q.len+'px',ang:q.ang+'deg',
+      tr:q.wrap?'opacity .3s':'left 1s linear,top 1s linear,opacity .3s',op:inF(x)?1:.18,color:COLORS[x.id],size:sel?'13px':x.size,
+      track:sel?'rgba(138,182,255,.55)':'rgba(138,182,255,.16)',labelOp:sel||x.id==='iss'?1:0,select:()=>this.setState({selId:x.id})};});
+    const satList=SATS.filter(inF).map(x=>({name:x.name,color:COLORS[x.id],elTxt:`${pos[x.id].el}° · ${DIRS[Math.round(pos[x.id].az/45)%8]}`,select:()=>this.setState({selId:x.id}),
+      rowBg:x.id===s.selId?'var(--card2)':'transparent',rowBd:x.id===s.selId?'var(--acc)':'var(--line)'}));
+    const S=SATS.find(x=>x.id===s.selId),sq=pos[S.id];
+    const sel={full:S.full,typeLabel:TYPE[S.type],el:sq.el+'°',az:`${sq.az}° ${DIRS[Math.round(sq.az/45)%8]}`,alt:S.alt.replace(' km',''),mag:S.mag,next:S.next};
+    const selOn=!!s.alerts[S.id];
+    const toggleAlert=id=>{const on=!s.alerts[id];this.setState({alerts:{...s.alerts,[id]:on}});this.showToast(on?`Alerta ativado · ${s.lead} min antes`:'Alerta desativado');};
+    const filters=[['Todos','all'],['Estações','est'],['Telescópios','tel'],['Starlink','sl'],['Clima','met']].map(([label,v])=>{const on=s.filter===v;return{label,go:set({filter:v}),bg:on?'var(--acc)':'var(--card)',bd:on?'var(--acc)':'var(--line)',color:on?'#fff':'var(--ink2)'};});
+    // events
+    const evFilters=[['Todos','all'],['Satélites','sat'],['Lua','lua'],['Meteoros','met']].map(([label,v])=>{const on=s.evFilter===v;return{label,go:set({evFilter:v}),bg:on?'var(--acc)':'transparent',color:on?'#fff':'var(--ink2)'};});
+    const eventsList=EVENTS.filter(e=>s.evFilter==='all'||e.cat===s.evFilter).map(e=>{const on=!!s.saved[e.id];return{...e,
+      dateBg:e.today?'var(--acc)':'var(--line)',dateColor:e.today?'#fff':'var(--ink)',
+      saveBg:on?'var(--acc)':'transparent',saveColor:on?'#fff':'var(--ink3)',saveFill:on?'currentColor':'none',
+      bars:[1,2,3,4,5].map(i=>({bg:i<=e.vis?'var(--acc)':'var(--line)'})),
+      toggle:()=>{this.setState({saved:{...s.saved,[e.id]:!on}});this.showToast(on?'Lembrete removido':'Lembrete criado');}};});
+    const eventsTop=EVENTS.slice(0,4);
+    // dash B orbit
+    const th=t/30*2*Math.PI,ox=150*Math.cos(th),oy=55*Math.sin(th),r=-20*Math.PI/180;
+    const orbX=(175+ox*Math.cos(r)-oy*Math.sin(r))+'px',orbY=(0.54*340+ox*Math.sin(r)+oy*Math.cos(r))+'px';
+    const passes=[['19:42','iss','64°',.71],['20:15','sl','28°',.31],['21:07','tg','47°',.52],['22:48','noaa','35°',.39]].map(([time,id,el,w])=>{const x=SATS.find(z=>z.id===id);return{time,name:x.name,el,mag:x.mag,w:w*100+'%',go:()=>this.setState({tab:'track',selId:id})};});
+    const timeline=[['18:12','Pôr do sol','Início do crepúsculo','#F2A65A',null],['19:42','Passagem da ISS','NO → SE · 64° · 6 min','var(--acc)','iss'],['20:15','Trem Starlink','Baixo a oeste · 28°','#7FE3D0','sl'],['21:07','Tiangong','SO → L · 47°','#F2C46B','tg'],['00:48','Lua se põe','Céu escuro até o amanhecer','#D9D4CA',null],['05:31','Nascer do sol','Fim da janela de observação','#F2A65A',null]]
+      .map(([time,title,sub,dot,id])=>({time,title,sub,dot,glow:`0 0 10px ${dot}`,bg:id==='iss'?'var(--card2)':'var(--card)',go:id?()=>this.setState({tab:'track',selId:id}):()=>{}}));
+    // profile
+    const tog=(label,sub,on,fn)=>({label,sub,toggle:fn,bg:on?'var(--acc)':'var(--line)',x:on?'23px':'3px'});
+    const toggles=[tog('Passagens de satélites','ISS, Tiangong e outros visíveis',s.notifPass,set({notifPass:!s.notifPass})),tog('Eventos no céu','Meteoros, Lua e planetas',s.notifEvents,set({notifEvents:!s.notifEvents}))];
+    const toggles2=[tog('Reduzir movimento','Desativa animações e transições',s.reduce,set({reduce:!s.reduce}))];
+    const segIn=(label,on,go)=>({label,go,bg:on?'var(--solid)':'transparent',color:on?'var(--ink)':'var(--ink2)',sh:on?'0 2px 8px rgba(0,0,0,.15)':'none'});
+    const leadOpts=[5,10,15,30].map(m=>segIn(m+' min',s.lead===m,set({lead:m})));
+    const themeOpts=[['Escuro','dark'],['Claro','light'],['Ambos','both']].map(([l,v])=>segIn(l,s.layout===v,set({layout:v})));
+    const accentOpts=Object.keys(ACC).map(k=>({c:ACC[k],go:set({accent:k}),ring:accent===k?`0 0 0 3px var(--solid),0 0 0 5px ${ACC[k]}`:'none'}));
+    const tabs=['home','track','events','profile'];
+    const tabGo={},navBg={},navC={};tabs.forEach(k=>{tabGo[k]=set({tab:k});navBg[k]=s.tab===k?'var(--acc)':'transparent';navC[k]=s.tab===k?'#fff':'var(--ink2)';});
+    const ringOffset=590.6*(left/(3*3600));
+    return {
+      jumps,panelSegs,phones,accent,motion:s.reduce?'reduced':'full',
+      outerR:isIOS?'58px':'44px',innerR:isIOS?'48px':'34px',isIOS,isAndroid:!isIOS,indW:isIOS?'134px':'108px',
+      topPad:isIOS?'58px':'46px',navBottom:isIOS?'26px':'22px',clock,clockSec:`${clock}:${pad(now.getSeconds())}`,
+      sbColor:s.screen==='splash'?'#EEF2FA':'var(--ink)',
+      isSplash:s.screen==='splash',isWelcome:s.screen==='welcome',isAuth:s.screen==='auth',isApp:s.screen==='app',
+      skipSplash:()=>this.go('welcome',{slide:0}),
+      slide,slideIdx:s.slide,dots:SLIDES.map((_,i)=>({w:i===s.slide?'28px':'8px',bg:i===s.slide?'var(--acc)':'var(--line)',go:set({slide:i})})),
+      ctaLabel:s.slide<2?'Continuar':'Começar',nextSlide:()=>s.slide<2?this.setState({slide:s.slide+1}):this.go('auth',{authMode:'signup',errs:{}}),
+      goAuth:()=>this.go('auth',{authMode:'signup',errs:{}}),goLogin:()=>this.go('auth',{authMode:'login',errs:{}}),goWelcome:()=>this.go('welcome'),
+      isLogin:s.authMode==='login',isSignup:s.authMode==='signup',
+      authTitle:s.authMode==='login'?'Bem-vindo de volta':'Crie sua conta',authSub:s.authMode==='login'?'Entre para ver as passagens desta noite.':'Leva menos de um minuto. Prometemos.',
+      tabLeft:s.authMode==='login'?'4px':'50%',loginTabColor:s.authMode==='login'?'#fff':'var(--ink2)',signupTabColor:s.authMode==='signup'?'#fff':'var(--ink2)',
+      modeLogin:set({authMode:'login',errs:{}}),modeSignup:set({authMode:'signup',errs:{}}),
+      name:s.name,email:s.email,pwd:s.pwd,
+      onName:e=>this.setState({name:e.target.value}),onEmail:e=>this.setState({email:e.target.value}),onPwd:e=>this.setState({pwd:e.target.value}),
+      errName:s.errs.name||'',errEmail:s.errs.email||'',errPwd:s.errs.pwd||'',
+      bdName:s.errs.name?'#FF6B7A':'var(--line)',bdEmail:s.errs.email?'#FF6B7A':'var(--line)',bdPwd:s.errs.pwd?'#FF6B7A':'var(--line)',
+      pwdType:s.showPwd?'text':'password',pwdToggleLabel:s.showPwd?'Ocultar':'Mostrar',togglePwd:set({showPwd:!s.showPwd}),
+      loading:s.loading,submitLabel:s.loading?'':(s.authMode==='login'?'Entrar':'Criar conta'),submit:()=>this.submit(),
+      socialLogin:()=>{this.setState({loading:true});setTimeout(()=>this.setState({loading:false,screen:'app',tab:'home'}),700);},
+      tabHome:s.tab==='home',tabTrack:s.tab==='track',tabEvents:s.tab==='events',tabProfile:s.tab==='profile',
+      dashVar,dashA:dashVar==='A',dashB:dashVar==='B',dashC:dashVar==='C',
+      greeting,initials,displayName,displayEmail:s.email||'marina.alves@email.com',
+      goProfile:set({tab:'profile'}),goEvents:set({tab:'events'}),seeIss:set({tab:'track',selId:'iss',filter:'all'}),
+      countdown,countdownShort:`${Math.floor(left/3600)}h${pad(Math.floor(left%3600/60))}`,ringOffset,
+      issAlertBg:s.alerts.iss?'rgba(59,123,255,.35)':'rgba(255,255,255,.06)',issAlertFill:s.alerts.iss?'currentColor':'none',issAlertLabel:s.alerts.iss?'Alerta on':'Alertar',
+      toggleIssAlert:()=>toggleAlert('iss'),
+      shortcuts:[{label:'Rastrear',r:'50%',t:'none',go:set({tab:'track'})},{label:'Eventos',r:'5px',t:'none',go:set({tab:'events'})},{label:'Lua',r:'50% 50% 50% 0',t:'rotate(-45deg)',go:set({tab:'events',evFilter:'lua'})},{label:'Alertas',r:'4px',t:'rotate(45deg)',go:set({tab:'profile'})}],
+      eventsTop,orbX,orbY,orbZ:Math.sin(th)<0?1:3,orbitNo:(132418+Math.floor(t/30)).toLocaleString('pt-BR'),
+      issLat:(-23.5+12*Math.sin(t/20)).toFixed(2)+'°',issLon:(-46.6+(t*0.6)%60).toFixed(2)+'°',passes,timeline,
+      filters,sats,satList,sel,selId:s.selId,
+      selAlertBg:selOn?'var(--acc)':'transparent',selAlertColor:selOn?'#fff':'var(--ink2)',selAlertFill:selOn?'currentColor':'none',toggleSelAlert:()=>toggleAlert(S.id),
+      evFilters,eventsList,
+      alertCount:Object.values(s.alerts).filter(Boolean).length,savedCount:Object.values(s.saved).filter(Boolean).length,
+      toggles,toggles2,leadOpts,themeOpts,accentOpts,
+      accountRows:[{label:'Localização',val:'São Paulo'},{label:'Unidades',val:'Métrico'},{label:'Idioma',val:'Português'}],
+      logout:()=>this.go('auth',{authMode:'login',pwd:'',errs:{}}),
+      toast:s.toast,tabGo,navBg,navC,
+    };
+  }
+}
+</script>
+</body>
+</html>

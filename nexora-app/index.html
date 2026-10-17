@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<style>
+body{margin:0;background:#02040A;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#7FB0FF;text-decoration:none}a:hover{color:#A9C7FF}
+input::placeholder{color:var(--ink3)}
+button{font-family:inherit}
+[data-theme=dark]{--bg:#04060E;--card:rgba(24,36,74,.42);--card2:rgba(30,44,88,.55);--solid:#111A38;--line:rgba(140,170,255,.14);--ink:#EEF2FA;--ink2:#A2ADC8;--ink3:#707C9A;--glass:rgba(10,16,36,.72);--stars:1}
+[data-theme=light]{--bg:#F1F3F8;--card:rgba(255,255,255,.9);--card2:#FFFFFF;--solid:#FFFFFF;--line:rgba(12,22,52,.09);--ink:#0A1124;--ink2:#46526E;--ink3:#69738D;--glass:rgba(255,255,255,.8);--stars:0}
+[data-accent=blue]{--acc:#3B7BFF;--acc2:#8AB6FF;--glow:rgba(59,123,255,.42)}
+[data-accent=cyan]{--acc:#0E9BD0;--acc2:#6FD9F5;--glow:rgba(14,155,208,.4)}
+[data-accent=violet]{--acc:#6F55F5;--acc2:#B3A2FF;--glow:rgba(111,85,245,.42)}
+@keyframes nasaIn{0%{opacity:0;letter-spacing:.9em;filter:blur(10px)}100%{opacity:1;letter-spacing:.34em;filter:blur(0)}}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+@keyframes fade{0%{opacity:0}100%{opacity:1}}
+@keyframes orbitIn{0%{transform:rotate(-18deg) scale(.6);opacity:0}100%{transform:rotate(-18deg) scale(1);opacity:1}}
+@keyframes load{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes ping{0%{transform:translate(-50%,-50%) scale(.6);opacity:.9}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,10px)}100%{opacity:1;transform:translate(-50%,0)}}
+[data-motion=reduced] *{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:flex-start;justify-content:center;gap:48px;padding:56px 40px;box-sizing:border-box;background:radial-gradient(ellipse at 60% 10%,#0C1834 0%,#02040A 62%);width:max-content;min-width:100%">
+
+  <div style="width:280px;flex:none;display:flex;flex-direction:column;gap:24px;color:#EEF2FA;padding-top:8px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font:500 11px JetBrains Mono,monospace;letter-spacing:.18em;color:#7FB0FF">v2 · DADOS AO VIVO</div>
+      <div style="font:600 32px/1.05 Space Grotesk,sans-serif;letter-spacing:-.01em">Nexora — Rastreie o céu</div>
+      <div style="font:400 14px/1.55 Manrope,sans-serif;color:#97A3BF;text-wrap:pretty">Órbitas reais (CelesTrak), previsão do tempo (Open-Meteo), Lua e passagens calculadas para a sua localização. Contas e preferências ficam salvas neste navegador.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:14px;background:rgba(22,34,70,.35);border:1px solid rgba(140,170,255,.12)">
+      <sc-for list="{{ statusRows }}" as="r" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;gap:10px;font:500 12px Manrope,sans-serif;color:#C9D3EA"><span style="width:7px;height:7px;border-radius:50%;background:{{ r.c }}"></span><span style="flex:1">{{ r.label }}</span><span style="color:#7E8AA8">{{ r.val }}</span></div>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.16em;color:#6E7A98;margin-bottom:4px">IR PARA TELA</div>
+      <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="8">
+        <button onClick="{{ j.go }}" style="display:flex;align-items:center;gap:12px;background:{{ j.bg }};border:1px solid {{ j.bd }};color:#DDE4F3;padding:9px 14px;border-radius:12px;font:500 13px Manrope,sans-serif;cursor:pointer;text-align:left;transition:border-color .2s" style-hover="border-color:rgba(140,170,255,.4)">
+          <span style="font:500 10px JetBrains Mono,monospace;color:#6E7A98;width:18px">{{ j.n }}</span>{{ j.label }}
+        </button>
+      </sc-for>
+    </div>
+    <sc-for list="{{ panelSegs }}" as="g" hint-placeholder-count="3">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.16em;color:#6E7A98">{{ g.title }}</div>
+        <div style="display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(22,34,70,.5);border:1px solid rgba(140,170,255,.12)">
+          <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3">
+            <button onClick="{{ o.go }}" style="flex:1;border:0;border-radius:9px;padding:9px 4px;font:600 12px Manrope,sans-serif;cursor:pointer;background:{{ o.bg }};color:{{ o.color }};transition:background .2s">{{ o.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-for list="{{ phones }}" as="p" hint-placeholder-count="2">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:18px;flex:none">
+  <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.2em;color:#6E7A98">{{ p.label }}</div>
+  <div data-theme="{{ p.theme }}" data-accent="{{ accent }}" data-motion="{{ motion }}" style="width:390px;height:844px;border-radius:{{ outerR }};padding:11px;background:linear-gradient(145deg,#2C3246,#0B0E18 40%,#1C2130);box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06);flex:none">
+    <div style="position:relative;width:390px;height:844px;border-radius:{{ innerR }};overflow:hidden;background:var(--bg);color:var(--ink);transition:background .4s,color .4s">
+
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:var(--stars);background-image:radial-gradient(1px 1px at 22px 40px,#fff,transparent),radial-gradient(1px 1px at 120px 90px,#cfe0ff,transparent),radial-gradient(1.5px 1.5px at 300px 60px,#fff,transparent),radial-gradient(1px 1px at 350px 210px,#fff,transparent),radial-gradient(1px 1px at 60px 300px,#9fbfff,transparent),radial-gradient(1px 1px at 200px 420px,#fff,transparent),radial-gradient(1.5px 1.5px at 330px 520px,#cfe0ff,transparent),radial-gradient(1px 1px at 40px 640px,#fff,transparent),radial-gradient(1px 1px at 260px 720px,#fff,transparent),radial-gradient(1px 1px at 150px 790px,#9fbfff,transparent),radial-gradient(1px 1px at 380px 380px,#fff,transparent),radial-gradient(1px 1px at 95px 180px,#fff,transparent)"></div>
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:var(--stars)"><div style="position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 180px 150px,#fff,transparent),radial-gradient(1px 1px at 280px 330px,#fff,transparent),radial-gradient(1.5px 1.5px at 80px 470px,#fff,transparent),radial-gradient(1px 1px at 350px 680px,#fff,transparent);animation:twinkle 4s ease-in-out infinite"></div></div>
+
+      <sc-if value="{{ isIOS }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 38px;z-index:40;font:600 15px Manrope,sans-serif;color:{{ sbColor }};pointer-events:none">
+          <span>{{ clock }}</span>
+          <div style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px"><span style="width:3px;height:4px;background:currentColor;border-radius:1px"></span><span style="width:3px;height:6px;background:currentColor;border-radius:1px"></span><span style="width:3px;height:8px;background:currentColor;border-radius:1px"></span><span style="width:3px;height:11px;background:currentColor;border-radius:1px"></span></div>
+            <div style="width:25px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.9"><div style="width:75%;height:100%;background:currentColor;border-radius:1.5px"></div></div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isAndroid }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;left:0;right:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:40;font:500 14px Manrope,sans-serif;color:{{ sbColor }};pointer-events:none">
+          <span>{{ clock }}</span>
+          <div style="position:absolute;left:50%;top:12px;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#000"></div>
+          <div style="display:flex;align-items:center;gap:7px"><div style="width:0;height:0;border-left:12px solid transparent;border-bottom:12px solid currentColor"></div><div style="width:9px;height:15px;border-radius:2px;background:currentColor"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSplash }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ skipSplash }}" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 46%,rgba(59,123,255,.24),transparent 55%),#03050C;color:#EEF2FA;cursor:pointer;z-index:20">
+          <div style="position:absolute;inset:0;background-image:radial-gradient(1px 1px at 40px 120px,#fff,transparent),radial-gradient(1px 1px at 330px 160px,#fff,transparent),radial-gradient(1.5px 1.5px at 90px 600px,#cfe0ff,transparent),radial-gradient(1px 1px at 300px 700px,#fff,transparent),radial-gradient(1px 1px at 200px 250px,#fff,transparent);animation:twinkle 3s ease-in-out infinite"></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;width:320px;height:170px">
+            <div style="position:absolute;width:300px;height:98px;border:1px solid rgba(138,182,255,.45);border-radius:50%;animation:orbitIn 1.6s cubic-bezier(.2,.8,.2,1) both"></div>
+            <div style="position:absolute;width:300px;height:98px;transform:rotate(-18deg);animation:fade .8s 1.2s both"><div style="position:absolute;right:20px;top:15px;width:7px;height:7px;border-radius:50%;background:var(--acc2);box-shadow:0 0 12px 3px var(--acc)"></div></div>
+            <div style="font:600 44px/1 Space Grotesk,sans-serif;letter-spacing:.34em;padding-left:.34em;animation:nasaIn 1.4s cubic-bezier(.2,.8,.2,1) both;text-shadow:0 0 32px rgba(59,123,255,.6)">NEXORA</div>
+          </div>
+          <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.32em;color:#8592B4;margin-top:6px;animation:fade 1s .9s both">RASTREIE O CÉU</div>
+          <div style="position:absolute;bottom:96px;display:flex;flex-direction:column;align-items:center;gap:12px">
+            <div style="width:120px;height:2px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,transparent,var(--acc2));transform-origin:left;animation:load 2.6s ease-in-out both"></div></div>
+            <div style="font:500 11px Manrope,sans-serif;color:#6E7A98">{{ splashMsg }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:72px 28px 46px;box-sizing:border-box;animation:fade .6s both">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font:600 17px Space Grotesk,sans-serif;letter-spacing:.32em">NEXORA</div>
+            <button onClick="{{ goAuth }}" style="background:none;border:0;color:var(--ink2);font:600 14px Manrope,sans-serif;cursor:pointer;padding:10px 0">Pular</button>
+          </div>
+          <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center">
+            <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 65%);filter:blur(12px)"></div>
+            <div style="position:absolute;width:320px;height:320px;border-radius:50%;border:1px dashed var(--line);animation:spin 40s linear infinite"><div style="position:absolute;left:50%;top:-5px;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:var(--acc2);box-shadow:0 0 14px var(--acc)"></div></div>
+            <div style="position:absolute;width:244px;height:244px;border-radius:50%;border:1px solid var(--line)"></div>
+            <div style="width:176px;height:176px;border-radius:50%;background:{{ slide.grad }};box-shadow:inset -32px -24px 60px rgba(0,0,0,.65),0 0 80px var(--glow);transition:background .6s"></div>
+          </div>
+          <div key="{{ slideIdx }}" style="display:flex;flex-direction:column;gap:12px;animation:fadeUp .5s both;min-height:178px">
+            <div style="font:500 11px JetBrains Mono,monospace;letter-spacing:.2em;color:var(--acc)">{{ slide.tag }}</div>
+            <div style="font:600 33px/1.08 Space Grotesk,sans-serif;letter-spacing:-.015em;text-wrap:balance">{{ slide.title }}</div>
+            <div style="font:400 15px/1.55 Manrope,sans-serif;color:var(--ink2);text-wrap:pretty">{{ slide.body }}</div>
+          </div>
+          <div style="display:flex;gap:6px;margin:18px 0 22px">
+            <sc-for list="{{ dots }}" as="d" hint-placeholder-count="3"><div onClick="{{ d.go }}" style="height:4px;border-radius:4px;width:{{ d.w }};background:{{ d.bg }};transition:all .35s;cursor:pointer"></div></sc-for>
+          </div>
+          <button onClick="{{ nextSlide }}" style="height:56px;border:0;border-radius:18px;background:var(--acc);color:#fff;font:700 16px Manrope,sans-serif;cursor:pointer;box-shadow:0 10px 34px var(--glow),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s" style-active="transform:scale(.97)">{{ ctaLabel }}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+          <button onClick="{{ goLogin }}" style="margin-top:12px;background:none;border:0;color:var(--ink2);font:500 14px Manrope,sans-serif;cursor:pointer;padding:10px">Já tenho conta · <span style="color:var(--ink);font-weight:700">Entrar</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:70px 26px 40px;box-sizing:border-box;overflow-y:auto;scrollbar-width:none;animation:fade .5s both">
+          <div style="position:absolute;top:-130px;right:-130px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 65%);pointer-events:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <button onClick="{{ goWelcome }}" style="width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(12px)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+            <div style="font:600 14px Space Grotesk,sans-serif;letter-spacing:.32em;color:var(--ink2)">NEXORA</div>
+          </div>
+          <div style="margin:26px 0 24px;display:flex;flex-direction:column;gap:8px">
+            <div style="font:600 30px/1.1 Space Grotesk,sans-serif;letter-spacing:-.01em">{{ authTitle }}</div>
+            <div style="font:400 15px/1.5 Manrope,sans-serif;color:var(--ink2)">{{ authSub }}</div>
+          </div>
+          <div style="position:relative;display:flex;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line);margin-bottom:22px">
+            <div style="position:absolute;top:4px;bottom:4px;width:calc(50% - 4px);left:{{ tabLeft }};border-radius:12px;background:var(--acc);box-shadow:0 4px 16px var(--glow);transition:left .32s cubic-bezier(.2,.8,.2,1)"></div>
+            <button onClick="{{ modeLogin }}" style="position:relative;flex:1;height:42px;border:0;background:none;color:{{ loginTabColor }};font:700 14px Manrope,sans-serif;cursor:pointer;transition:color .3s">Entrar</button>
+            <button onClick="{{ modeSignup }}" style="position:relative;flex:1;height:42px;border:0;background:none;color:{{ signupTabColor }};font:700 14px Manrope,sans-serif;cursor:pointer;transition:color .3s">Criar conta</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex;flex-direction:column;gap:7px;animation:fadeUp .3s both">
+                <span style="font:600 12px Manrope,sans-serif;color:var(--ink2)">Nome</span>
+                <input value="{{ name }}" onChange="{{ onName }}" placeholder="Como devemos te chamar?" style="height:54px;border-radius:15px;border:1px solid {{ bdName }};background:var(--card);color:var(--ink);padding:0 16px;font:500 15px Manrope,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s" style-focus="border-color:var(--acc);box-shadow:0 0 0 4px var(--glow)">
+                <sc-if value="{{ errName }}"><span style="font:600 12px Manrope,sans-serif;color:#FF6B7A">{{ errName }}</span></sc-if>
+              </label>
+            </sc-if>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px Manrope,sans-serif;color:var(--ink2)">E-mail</span>
+              <input value="{{ email }}" onChange="{{ onEmail }}" type="email" placeholder="voce@email.com" style="height:54px;border-radius:15px;border:1px solid {{ bdEmail }};background:var(--card);color:var(--ink);padding:0 16px;font:500 15px Manrope,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s" style-focus="border-color:var(--acc);box-shadow:0 0 0 4px var(--glow)">
+              <sc-if value="{{ errEmail }}"><span style="font:600 12px Manrope,sans-serif;color:#FF6B7A">{{ errEmail }}</span></sc-if>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px Manrope,sans-serif;color:var(--ink2)">Senha</span>
+              <div style="position:relative">
+                <input value="{{ pwd }}" onChange="{{ onPwd }}" onKeyDown="{{ onEnter }}" type="{{ pwdType }}" placeholder="Mínimo de 6 caracteres" style="width:100%;box-sizing:border-box;height:54px;border-radius:15px;border:1px solid {{ bdPwd }};background:var(--card);color:var(--ink);padding:0 72px 0 16px;font:500 15px Manrope,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s" style-focus="border-color:var(--acc);box-shadow:0 0 0 4px var(--glow)">
+                <button onClick="{{ togglePwd }}" type="button" style="position:absolute;right:6px;top:5px;height:44px;padding:0 12px;border:0;border-radius:10px;background:none;color:var(--acc);font:700 12px Manrope,sans-serif;cursor:pointer">{{ pwdToggleLabel }}</button>
+              </div>
+              <sc-if value="{{ errPwd }}"><span style="font:600 12px Manrope,sans-serif;color:#FF6B7A">{{ errPwd }}</span></sc-if>
+            </label>
+            <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}"><div style="display:flex;justify-content:flex-end;margin-top:-4px"><button onClick="{{ forgot }}" style="background:none;border:0;color:var(--ink2);font:600 13px Manrope,sans-serif;cursor:pointer;padding:6px 0">Esqueci a senha</button></div></sc-if>
+          </div>
+          <button onClick="{{ submit }}" style="margin-top:22px;min-height:56px;border:0;border-radius:18px;background:var(--acc);color:#fff;font:700 16px Manrope,sans-serif;cursor:pointer;box-shadow:0 10px 34px var(--glow),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s" style-active="transform:scale(.97)">
+            <sc-if value="{{ loading }}"><span style="width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite"></span></sc-if>
+            {{ submitLabel }}
+          </button>
+          <div style="display:flex;align-items:center;gap:12px;margin:22px 0 14px;color:var(--ink3);font:500 12px Manrope,sans-serif"><div style="flex:1;height:1px;background:var(--line)"></div>ou<div style="flex:1;height:1px;background:var(--line)"></div></div>
+          <button onClick="{{ guestLogin }}" style="height:52px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 14px Manrope,sans-serif;cursor:pointer;backdrop-filter:blur(12px);transition:border-color .2s" style-hover="border-color:var(--acc)">Continuar sem conta</button>
+          <div style="margin-top:auto;padding-top:20px;text-align:center;font:400 11.5px/1.5 Manrope,sans-serif;color:var(--ink3)">Sua conta fica salva apenas neste aparelho.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;overflow-y:auto;padding:{{ topPad }} 0 128px;box-sizing:border-box;scrollbar-width:none">
+
+          <sc-if value="{{ tabHome }}">
+            <div key="{{ dashVar }}" style="display:flex;flex-direction:column;gap:20px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px">
+                <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                  <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.14em;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ dateLabel }}</div>
+                  <div style="font:600 26px/1.1 Space Grotesk,sans-serif;letter-spacing:-.01em">{{ greeting }}</div>
+                </div>
+                <button onClick="{{ goProfile }}" style="flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:linear-gradient(135deg,var(--acc),#0B1A44);color:#fff;font:700 15px Space Grotesk,sans-serif;cursor:pointer">{{ initials }}</button>
+              </div>
+
+              <sc-if value="{{ dashA }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <div style="position:relative;border-radius:30px;padding:20px;background:radial-gradient(circle at 85% 0%,var(--glow),transparent 55%),linear-gradient(165deg,#0F1C42,#060A18);color:#fff;border:1px solid rgba(140,170,255,.2);overflow:hidden;box-shadow:0 20px 50px rgba(4,10,30,.35)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:#A9C2F2">{{ heroTag }}</div>
+                      <sc-if value="{{ hasPass }}"><div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;background:{{ visBadgeBg }};color:{{ visBadgeColor }};font:700 11px Manrope,sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ visBadge }}</div></sc-if>
+                    </div>
+                    <sc-if value="{{ hasPass }}" hint-placeholder-val="{{ true }}">
+                      <div style="position:relative;width:212px;height:212px;margin:14px auto 6px">
+                        <svg width="212" height="212" viewBox="0 0 212 212" style="position:absolute;inset:0;transform:rotate(-90deg)">
+                          <circle cx="106" cy="106" r="94" fill="none" stroke="rgba(140,170,255,.14)" stroke-width="3"></circle>
+                          <circle cx="106" cy="106" r="94" fill="none" stroke="var(--acc2)" stroke-width="3" stroke-linecap="round" stroke-dasharray="590.6" stroke-dashoffset="{{ ringOffset }}" style="transition:stroke-dashoffset 1s linear;filter:drop-shadow(0 0 6px var(--acc))"></circle>
+                        </svg>
+                        <div style="position:absolute;inset:18px;border-radius:50%;border:1px dashed rgba(140,170,255,.16)"></div>
+                        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+                          <div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">{{ countLabel }}</div>
+                          <div style="font:500 34px/1 JetBrains Mono,monospace;letter-spacing:-.02em;font-variant-numeric:tabular-nums">{{ countdown }}</div>
+                          <div style="font:600 13px Manrope,sans-serif;color:#fff">{{ heroWhen }}</div>
+                        </div>
+                      </div>
+                      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+                        <sc-for list="{{ heroStats }}" as="h" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06)"><span style="font:500 10px Manrope,sans-serif;color:#A9C2F2">{{ h.k }}</span><span style="font:600 16px Space Grotesk,sans-serif">{{ h.v }}</span></div></sc-for>
+                      </div>
+                      <div style="display:flex;gap:10px;margin-top:16px">
+                        <button onClick="{{ seeIss }}" style="flex:1;height:50px;border:0;border-radius:16px;background:var(--acc);color:#fff;font:700 14px Manrope,sans-serif;cursor:pointer;box-shadow:0 8px 24px var(--glow);transition:transform .15s" style-active="transform:scale(.97)">Ver no céu</button>
+                        <button onClick="{{ toggleIssAlert }}" style="height:50px;padding:0 16px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:{{ issAlertBg }};color:#fff;font:700 14px Manrope,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .25s">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ issAlertFill }}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg>{{ issAlertLabel }}
+                        </button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ noPass }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:40px 0 24px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+                        <sc-if value="{{ dataLoading }}"><span style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:var(--acc2);animation:spin .8s linear infinite"></span></sc-if>
+                        <div style="font:600 15px/1.4 Manrope,sans-serif;max-width:260px">{{ dataMsg }}</div>
+                        <sc-if value="{{ dataFailed }}"><button onClick="{{ retry }}" style="height:44px;padding:0 18px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:700 13px Manrope,sans-serif;cursor:pointer">Tentar de novo</button></sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                    <sc-for list="{{ shortcuts }}" as="s" hint-placeholder-count="4">
+                      <button onClick="{{ s.go }}" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;color:var(--ink);cursor:pointer;padding:0">
+                        <div style="width:64px;height:64px;border-radius:21px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);transition:transform .2s,border-color .2s" style-hover="border-color:var(--acc);transform:translateY(-2px)">
+                          <div style="width:20px;height:20px;border-radius:{{ s.r }};border:2px solid var(--acc);box-sizing:border-box;transform:{{ s.t }}"></div>
+                        </div>
+                        <span style="font:600 11.5px Manrope,sans-serif;color:var(--ink2)">{{ s.label }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div style="border-radius:24px;padding:16px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:12px">
+                      <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.14em;color:var(--ink3)">LUA HOJE</div>
+                      <div style="position:relative;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#F4F1EA,#B9B4AA);overflow:hidden;box-shadow:0 0 24px rgba(220,225,255,.25)"><div style="position:absolute;inset:0;border-radius:50%;background:#0A0F20;transform:translateX({{ moonShift }});opacity:.94"></div></div>
+                      <div style="display:flex;flex-direction:column;gap:2px"><div style="font:600 15px Space Grotesk,sans-serif">{{ moonName }}</div><div style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ moonIllumTxt }} iluminada</div></div>
+                    </div>
+                    <div style="border-radius:24px;padding:16px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:12px">
+                      <div style="font:500 10px JetBrains Mono,monospace;letter-spacing:.14em;color:var(--ink3)">CÉU À NOITE</div>
+                      <div style="font:600 32px/1 Space Grotesk,sans-serif;color:var(--acc)">{{ skyScore }}<span style="font:500 14px Manrope,sans-serif;color:var(--ink3)"> /10</span></div>
+                      <div style="display:flex;flex-direction:column;gap:6px">
+                        <div style="height:5px;border-radius:5px;background:var(--line);overflow:hidden"><div style="width:{{ skyBarW }};height:100%;background:var(--acc);border-radius:5px;transition:width .6s"></div></div>
+                        <div style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ skySub }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:600 18px Space Grotesk,sans-serif">Próximos eventos</div><button onClick="{{ goEvents }}" style="background:none;border:0;color:var(--acc);font:700 13px Manrope,sans-serif;cursor:pointer;padding:6px 0">Ver todos</button></div>
+                    <div style="display:flex;gap:12px;overflow-x:auto;margin:0 -20px;padding:0 20px 4px;scrollbar-width:none">
+                      <sc-for list="{{ eventsTop }}" as="e" hint-placeholder-count="3">
+                        <button onClick="{{ goEvents }}" style="flex:none;width:200px;text-align:left;border-radius:22px;padding:16px;background:var(--card);border:1px solid var(--line);color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(12px)">
+                          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.1em;color:var(--acc)">{{ e.tag }}</span><span style="font:500 11px Manrope,sans-serif;color:var(--ink3)">{{ e.when }}</span></div>
+                          <div style="font:600 16px/1.2 Space Grotesk,sans-serif">{{ e.title }}</div>
+                          <div style="font:500 12px/1.4 Manrope,sans-serif;color:var(--ink2)">{{ e.short }}</div>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ dashB }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <div style="position:relative;height:340px;border-radius:30px;overflow:hidden;background:radial-gradient(circle at 50% 55%,rgba(59,123,255,.25),transparent 60%),linear-gradient(180deg,#070C1E,#03050C);border:1px solid rgba(140,170,255,.2);color:#fff">
+                    <div style="position:absolute;inset:0;background-image:radial-gradient(1px 1px at 30px 40px,#fff,transparent),radial-gradient(1px 1px at 300px 70px,#fff,transparent),radial-gradient(1px 1px at 60px 290px,#cfe0ff,transparent),radial-gradient(1px 1px at 320px 260px,#fff,transparent),radial-gradient(1px 1px at 180px 30px,#fff,transparent)"></div>
+                    <div style="position:absolute;left:50%;top:54%;width:300px;height:110px;margin:-55px 0 0 -150px;border-radius:50%;border:1px solid rgba(138,182,255,.35);transform:rotate(-20deg)"></div>
+                    <div style="position:absolute;left:{{ orbX }};top:{{ orbY }};width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--acc2);box-shadow:0 0 14px 4px var(--acc);z-index:{{ orbZ }};transition:left 1s linear,top 1s linear"></div>
+                    <div style="position:absolute;left:50%;top:54%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4D8DFF,#163C8C 45%,#061433 80%);box-shadow:inset -22px -18px 44px rgba(0,0,0,.6),0 0 60px rgba(59,123,255,.45);z-index:2"></div>
+                    <div style="position:absolute;left:18px;top:18px;right:18px;display:flex;justify-content:space-between;z-index:3">
+                      <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:20px;background:rgba(5,10,25,.55);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.1);font:700 11px Manrope,sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:#FF5D6C;box-shadow:0 0 8px #FF5D6C"></span>ISS ao vivo</div>
+                      <div style="font:500 11px JetBrains Mono,monospace;color:#A9C2F2;padding-top:7px">{{ issAltTxt }}</div>
+                    </div>
+                    <div style="position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;z-index:3">
+                      <div style="padding:10px 12px;border-radius:14px;background:rgba(5,10,25,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)"><div style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Latitude</div><div style="font:500 14px JetBrains Mono,monospace">{{ issLat }}</div></div>
+                      <div style="padding:10px 12px;border-radius:14px;background:rgba(5,10,25,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)"><div style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Longitude</div><div style="font:500 14px JetBrains Mono,monospace">{{ issLon }}</div></div>
+                      <div style="padding:10px 12px;border-radius:14px;background:rgba(5,10,25,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)"><div style="font:500 10px Manrope,sans-serif;color:#A9C2F2">Velocidade</div><div style="font:500 14px JetBrains Mono,monospace">{{ issVel }}</div></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:600 18px Space Grotesk,sans-serif">Próximas passagens</div><span style="font:500 12px Manrope,sans-serif;color:var(--ink3)">{{ passesCount }}</span></div>
+                    <sc-if value="{{ noPass }}"><div style="padding:18px;border-radius:20px;background:var(--card);border:1px solid var(--line);font:500 13px Manrope,sans-serif;color:var(--ink2)">{{ dataMsg }}</div></sc-if>
+                    <sc-for list="{{ passRows }}" as="ps" hint-placeholder-count="4">
+                      <button onClick="{{ ps.go }}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;background:var(--card);border:1px solid var(--line);color:var(--ink);cursor:pointer;text-align:left;backdrop-filter:blur(12px);transition:border-color .2s" style-hover="border-color:var(--acc)">
+                        <div style="display:flex;flex-direction:column;gap:2px;width:58px"><span style="font:500 15px JetBrains Mono,monospace">{{ ps.time }}</span><span style="font:500 11px Manrope,sans-serif;color:var(--ink3)">{{ ps.day }}</span></div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                          <div style="display:flex;justify-content:space-between;gap:6px"><span style="font:700 14px Manrope,sans-serif">{{ ps.name }}</span><span style="font:600 12px Manrope,sans-serif;color:{{ ps.visColor }}">{{ ps.el }} · {{ ps.vis }}</span></div>
+                          <div style="height:4px;border-radius:4px;background:var(--line);overflow:hidden"><div style="height:100%;width:{{ ps.w }};background:var(--acc);border-radius:4px"></div></div>
+                        </div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ dashC }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <div style="border-radius:30px;padding:22px;background:linear-gradient(180deg,#0B1636,#060A18);border:1px solid rgba(140,170,255,.2);color:#fff;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+                    <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 65%)"></div>
+                    <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:#A9C2F2">ÍNDICE DE OBSERVAÇÃO · HOJE</div>
+                    <div style="display:flex;align-items:flex-end;gap:14px"><div style="font:600 72px/0.9 Space Grotesk,sans-serif;letter-spacing:-.03em">{{ skyScore }}</div><div style="font:600 15px/1.35 Manrope,sans-serif;color:#C9D6F2;padding-bottom:6px;max-width:150px">{{ skyLabel }}</div></div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                      <sc-for list="{{ skyStats }}" as="h" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 11px Manrope,sans-serif;color:#A9C2F2">{{ h.k }}</span><span style="font:600 16px Space Grotesk,sans-serif">{{ h.v }}</span></div></sc-for>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <div style="font:600 18px Space Grotesk,sans-serif;margin-bottom:10px">Próximas horas</div>
+                    <sc-for list="{{ timeline }}" as="tl" hint-placeholder-count="6">
+                      <div style="display:flex;gap:14px;align-items:stretch">
+                        <div style="width:46px;font:500 13px JetBrains Mono,monospace;color:var(--ink2);padding-top:14px">{{ tl.time }}</div>
+                        <div style="position:relative;width:14px;display:flex;justify-content:center">
+                          <div style="position:absolute;top:0;bottom:0;width:1px;background:var(--line)"></div>
+                          <div style="position:relative;margin-top:17px;width:10px;height:10px;border-radius:50%;background:{{ tl.dot }};box-shadow:{{ tl.glow }}"></div>
+                        </div>
+                        <button onClick="{{ tl.go }}" style="flex:1;text-align:left;margin:4px 0;padding:12px 14px;border-radius:16px;background:{{ tl.bg }};border:1px solid var(--line);color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:3px">
+                          <span style="font:700 14px Manrope,sans-serif">{{ tl.title }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ tl.sub }}</span>
+                        </button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabTrack }}">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px">
+                <div style="font:600 28px Space Grotesk,sans-serif;letter-spacing:-.01em">Rastrear</div>
+                <div style="display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:20px;background:var(--card);border:1px solid var(--line);font:700 11px Manrope,sans-serif"><span style="width:6px;height:6px;border-radius:50%;background:{{ liveDot }};box-shadow:0 0 8px {{ liveDot }}"></span>{{ liveLabel }}</div>
+              </div>
+              <div style="display:flex;gap:8px;overflow-x:auto;margin:0 -20px;padding:0 20px;scrollbar-width:none">
+                <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+                  <button onClick="{{ f.go }}" style="flex:none;height:38px;padding:0 16px;border-radius:20px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.color }};font:700 13px Manrope,sans-serif;cursor:pointer;transition:all .2s">{{ f.label }}</button>
+                </sc-for>
+              </div>
+              <div style="position:relative;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(59,123,255,.12),transparent 70%),linear-gradient(180deg,#081028,#04070F);box-shadow:0 0 0 1px rgba(140,170,255,.18),0 20px 60px rgba(4,10,30,.4);overflow:hidden">
+                <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(138,182,255,.22),transparent 60deg);animation:spin 6s linear infinite"></div>
+                <div style="position:absolute;inset:65px;border-radius:50%;border:1px solid rgba(140,170,255,.16)"></div>
+                <div style="position:absolute;inset:120px;border-radius:50%;border:1px solid rgba(140,170,255,.16)"></div>
+                <div style="position:absolute;left:175px;top:0;bottom:0;width:1px;background:rgba(140,170,255,.1)"></div>
+                <div style="position:absolute;top:175px;left:0;right:0;height:1px;background:rgba(140,170,255,.1)"></div>
+                <div style="position:absolute;left:181px;top:69px;font:500 9px JetBrains Mono,monospace;color:#6E7FA8">30°</div>
+                <div style="position:absolute;left:181px;top:124px;font:500 9px JetBrains Mono,monospace;color:#6E7FA8">60°</div>
+                <div style="position:absolute;left:0;right:0;top:8px;text-align:center;font:600 11px JetBrains Mono,monospace;color:#A9C2F2">N</div>
+                <div style="position:absolute;left:0;right:0;bottom:8px;text-align:center;font:600 11px JetBrains Mono,monospace;color:#6E7FA8">S</div>
+                <div style="position:absolute;left:10px;top:168px;font:600 11px JetBrains Mono,monospace;color:#6E7FA8">O</div>
+                <div style="position:absolute;right:10px;top:168px;font:600 11px JetBrains Mono,monospace;color:#6E7FA8">L</div>
+                <sc-for list="{{ pathDots }}" as="d" hint-placeholder-count="0"><div style="position:absolute;left:{{ d.x }};top:{{ d.y }};width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:var(--acc2);opacity:{{ d.op }}"></div></sc-for>
+                <sc-for list="{{ sats }}" as="s" hint-placeholder-count="5">
+                  <button onClick="{{ s.select }}" style="position:absolute;left:{{ s.x }};top:{{ s.y }};width:44px;height:44px;margin:-22px 0 0 -22px;border:0;background:none;cursor:pointer;opacity:{{ s.op }};visibility:{{ s.vis }};transition:left 1s linear,top 1s linear,opacity .3s;padding:0">
+                    <sc-if value="{{ s.sel }}"><span style="position:absolute;left:50%;top:50%;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--acc2);animation:ping 1.6s ease-out infinite"></span></sc-if>
+                    <span style="position:absolute;left:50%;top:50%;width:{{ s.size }};height:{{ s.size }};transform:translate(-50%,-50%);border-radius:50%;background:{{ s.color }};box-shadow:0 0 10px 2px {{ s.color }}"></span>
+                    <span style="position:absolute;left:34px;top:8px;white-space:nowrap;font:700 10.5px Manrope,sans-serif;color:#E6EEFF;text-shadow:0 1px 4px #000">{{ s.name }}</span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ noneUp }}">
+                  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:220px;padding:14px;border-radius:16px;background:rgba(5,10,25,.72);backdrop-filter:blur(10px);border:1px solid rgba(140,170,255,.18);text-align:center;color:#fff;display:flex;flex-direction:column;gap:4px">
+                    <span style="font:700 13px Manrope,sans-serif">Nenhum acima do horizonte</span><span style="font:500 12px Manrope,sans-serif;color:#A9C2F2">{{ nextUpTxt }}</span>
+                  </div>
+                </sc-if>
+                <div style="position:absolute;left:175px;top:175px;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;opacity:.6"></div>
+              </div>
+
+              <div key="{{ selId }}" style="border-radius:26px;padding:18px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:14px;animation:fadeUp .35s both">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.12em;color:var(--acc)">{{ sel.typeLabel }}</span><span style="font:600 20px/1.15 Space Grotesk,sans-serif">{{ sel.full }}</span></div>
+                  <button onClick="{{ toggleSelAlert }}" style="flex:none;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:{{ selAlertBg }};color:{{ selAlertColor }};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s" style-active="transform:scale(.9)"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{ selAlertFill }}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg></button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Elevação</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.el }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Azimute</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.az }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">Altitude</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.alt }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 10.5px Manrope,sans-serif;color:var(--ink3)">km/h</span><span style="font:500 15px JetBrains Mono,monospace">{{ sel.vel }}</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--line)"><span style="font:500 13px Manrope,sans-serif;color:var(--ink2)">Próxima passagem</span><span style="font:700 13px Manrope,sans-serif;text-align:right">{{ sel.next }}</span></div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font:600 16px Space Grotesk,sans-serif;margin:4px 0 4px">Satélites acompanhados</div>
+                <sc-for list="{{ satList }}" as="s" hint-placeholder-count="5">
+                  <button onClick="{{ s.select }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:{{ s.rowBg }};border:1px solid {{ s.rowBd }};color:var(--ink);cursor:pointer;text-align:left;transition:all .2s">
+                    <span style="width:10px;height:10px;border-radius:50%;background:{{ s.color }};box-shadow:0 0 8px {{ s.color }}"></span>
+                    <span style="flex:1;font:700 14px Manrope,sans-serif">{{ s.name }}</span>
+                    <span style="font:500 12px JetBrains Mono,monospace;color:var(--ink2)">{{ s.elTxt }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabEvents }}">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="display:flex;flex-direction:column;gap:4px;padding-top:8px"><div style="font:600 28px Space Grotesk,sans-serif;letter-spacing:-.01em">Eventos no céu</div><div style="font:500 13px Manrope,sans-serif;color:var(--ink2)">Calculados para {{ cityLabel }}</div></div>
+              <div style="display:flex;gap:4px;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line)">
+                <sc-for list="{{ evFilters }}" as="f" hint-placeholder-count="4">
+                  <button onClick="{{ f.go }}" style="flex:1;height:38px;border:0;border-radius:12px;background:{{ f.bg }};color:{{ f.color }};font:700 12.5px Manrope,sans-serif;cursor:pointer;transition:all .2s">{{ f.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ noEvents }}"><div style="padding:24px;border-radius:24px;background:var(--card);border:1px solid var(--line);text-align:center;font:500 14px Manrope,sans-serif;color:var(--ink2)">Nada nesta categoria nos próximos dias.</div></sc-if>
+              <sc-for list="{{ eventsList }}" as="e" hint-placeholder-count="5">
+                <div style="display:flex;gap:14px;padding:16px;border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);animation:fadeUp .35s both">
+                  <div style="flex:none;width:52px;height:60px;border-radius:16px;background:{{ e.dateBg }};color:{{ e.dateColor }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font:600 20px/1 Space Grotesk,sans-serif">{{ e.day }}</span><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.1em">{{ e.mon }}</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+                    <div style="display:flex;justify-content:space-between;gap:8px"><span style="font:600 10px JetBrains Mono,monospace;letter-spacing:.1em;color:var(--acc);padding-top:3px">{{ e.tag }}</span>
+                      <button onClick="{{ e.toggle }}" style="flex:none;width:36px;height:36px;margin:-6px -6px 0 0;border-radius:12px;border:0;background:{{ e.saveBg }};color:{{ e.saveColor }};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s" style-active="transform:scale(.88)"><svg width="16" height="16" viewBox="0 0 24 24" fill="{{ e.saveFill }}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg></button>
+                    </div>
+                    <div style="font:600 17px/1.2 Space Grotesk,sans-serif;margin-top:-6px">{{ e.title }}</div>
+                    <div style="font:500 13px/1.45 Manrope,sans-serif;color:var(--ink2);text-wrap:pretty">{{ e.desc }}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+                      <span style="font:600 12px Manrope,sans-serif">{{ e.time }}</span>
+                      <div style="display:flex;align-items:center;gap:6px"><span style="font:500 11px Manrope,sans-serif;color:var(--ink3)">Visibilidade</span><div style="display:flex;gap:2px"><sc-for list="{{ e.bars }}" as="b" hint-placeholder-count="5"><span style="width:5px;height:12px;border-radius:2px;background:{{ b.bg }}"></span></sc-for></div></div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabProfile }}">
+            <div style="display:flex;flex-direction:column;gap:18px;padding:0 20px;animation:fadeUp .45s both">
+              <div style="padding-top:8px;font:600 28px Space Grotesk,sans-serif;letter-spacing:-.01em">Perfil</div>
+              <div style="position:relative;border-radius:28px;padding:20px;background:radial-gradient(circle at 100% 0%,var(--glow),transparent 60%),linear-gradient(165deg,#0F1C42,#060A18);border:1px solid rgba(140,170,255,.2);color:#fff;display:flex;flex-direction:column;gap:18px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:14px">
+                  <div style="flex:none;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#0B1A44);display:flex;align-items:center;justify-content:center;font:700 22px Space Grotesk,sans-serif;box-shadow:0 0 0 3px rgba(255,255,255,.08),0 0 30px var(--glow)">{{ initials }}</div>
+                  <div style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font:600 20px Space Grotesk,sans-serif">{{ displayName }}</span><span style="font:500 13px Manrope,sans-serif;color:#A9C2F2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ displayEmail }}</span><span style="font:600 11px JetBrains Mono,monospace;color:#C9D6F2;margin-top:2px">◎ {{ cityUpper }}</span></div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <div style="padding:12px;border-radius:16px;background:rgba(255,255,255,.06)"><div style="font:600 22px Space Grotesk,sans-serif">{{ alertCount }}</div><div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Alertas ativos</div></div>
+                  <div style="padding:12px;border-radius:16px;background:rgba(255,255,255,.06)"><div style="font:600 22px Space Grotesk,sans-serif">{{ savedCount }}</div><div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Lembretes</div></div>
+                  <div style="padding:12px;border-radius:16px;background:rgba(255,255,255,.06)"><div style="font:600 22px Space Grotesk,sans-serif">{{ passCount48 }}</div><div style="font:500 11px Manrope,sans-serif;color:#A9C2F2">Passagens 48h</div></div>
+                </div>
+              </div>
+
+              <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:var(--ink3);margin:4px 4px -8px">NOTIFICAÇÕES</div>
+              <div style="border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);overflow:hidden">
+                <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="2">
+                  <button onClick="{{ t.toggle }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);cursor:pointer;text-align:left">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:700 14px Manrope,sans-serif">{{ t.label }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ t.sub }}</span></div>
+                    <div style="flex:none;width:50px;height:30px;border-radius:20px;background:{{ t.bg }};position:relative;transition:background .25s"><div style="position:absolute;top:3px;left:{{ t.x }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:left .25s cubic-bezier(.2,.8,.2,1)"></div></div>
+                  </button>
+                </sc-for>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+                  <span style="font:700 14px Manrope,sans-serif">Avisar com antecedência</span>
+                  <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--line)">
+                    <sc-for list="{{ leadOpts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.go }}" style="flex:1;height:36px;border:0;border-radius:10px;background:{{ o.bg }};color:{{ o.color }};font:700 13px Manrope,sans-serif;cursor:pointer;transition:all .2s;box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for>
+                  </div>
+                </div>
+              </div>
+
+              <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:var(--ink3);margin:4px 4px -8px">APARÊNCIA</div>
+              <div style="border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);overflow:hidden">
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)">
+                  <span style="font:700 14px Manrope,sans-serif">Tema</span>
+                  <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--line)">
+                    <sc-for list="{{ themeOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="flex:1;height:36px;border:0;border-radius:10px;background:{{ o.bg }};color:{{ o.color }};font:700 13px Manrope,sans-serif;cursor:pointer;transition:all .2s;box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for>
+                  </div>
+                </div>
+                <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)">
+                  <span style="font:700 14px Manrope,sans-serif">Cor de destaque</span>
+                  <div style="display:flex;gap:10px">
+                    <sc-for list="{{ accentOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="width:30px;height:30px;border-radius:50%;border:0;background:{{ o.c }};cursor:pointer;box-shadow:{{ o.ring }};transition:box-shadow .2s"></button></sc-for>
+                  </div>
+                </div>
+                <sc-for list="{{ toggles2 }}" as="t" hint-placeholder-count="1">
+                  <button onClick="{{ t.toggle }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border:0;background:none;color:var(--ink);cursor:pointer;text-align:left">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:700 14px Manrope,sans-serif">{{ t.label }}</span><span style="font:500 12px Manrope,sans-serif;color:var(--ink2)">{{ t.sub }}</span></div>
+                    <div style="flex:none;width:50px;height:30px;border-radius:20px;background:{{ t.bg }};position:relative;transition:background .25s"><div style="position:absolute;top:3px;left:{{ t.x }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:left .25s cubic-bezier(.2,.8,.2,1)"></div></div>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div style="font:500 10.5px JetBrains Mono,monospace;letter-spacing:.16em;color:var(--ink3);margin:4px 4px -8px">CONTA E DADOS</div>
+              <div style="border-radius:24px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(12px);overflow:hidden">
+                <sc-for list="{{ accountRows }}" as="r" hint-placeholder-count="3">
+                  <button onClick="{{ r.go }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);cursor:pointer;text-align:left"><span style="font:700 14px Manrope,sans-serif">{{ r.label }}</span><span style="font:500 13px Manrope,sans-serif;color:var(--ink2);text-align:right">{{ r.val }}</span></button>
+                </sc-for>
+                <button onClick="{{ logout }}" style="width:100%;padding:15px 16px;border:0;background:none;color:#FF5D6C;font:700 14px Manrope,sans-serif;cursor:pointer;text-align:left">Sair da conta</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="position:absolute;top:0;left:0;right:0;height:{{ topPad }};background:linear-gradient(180deg,var(--bg) 55%,transparent);pointer-events:none;z-index:5"></div>
+
+        <div style="position:absolute;left:16px;right:16px;bottom:{{ navBottom }};height:70px;border-radius:26px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:20">
+          <button onClick="{{ tabGo.home }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.home }};color:{{ navC.home }};cursor:pointer;transition:all .25s"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg><span style="font:700 10.5px Manrope,sans-serif">Início</span></button>
+          <button onClick="{{ tabGo.track }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.track }};color:{{ navC.track }};cursor:pointer;transition:all .25s"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><circle cx="12" cy="12" r="1" fill="currentColor"></circle></svg><span style="font:700 10.5px Manrope,sans-serif">Rastrear</span></button>
+          <button onClick="{{ tabGo.events }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.events }};color:{{ navC.events }};cursor:pointer;transition:all .25s"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg><span style="font:700 10.5px Manrope,sans-serif">Eventos</span></button>
+          <button onClick="{{ tabGo.profile }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:56px;justify-content:center;border:0;border-radius:18px;background:{{ navBg.profile }};color:{{ navC.profile }};cursor:pointer;transition:all .25s"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.8"></circle><path d="M4.5 20c1.2-3.6 4-5.3 7.5-5.3s6.3 1.7 7.5 5.3" stroke-linecap="round"></path></svg><span style="font:700 10.5px Manrope,sans-serif">Perfil</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ toast }}">
+        <div style="position:absolute;left:50%;bottom:118px;z-index:50;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:16px;background:var(--solid);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.3);font:700 13px Manrope,sans-serif;color:var(--ink);max-width:320px;animation:toastIn .3s both;transform:translateX(-50%)"><span style="flex:none;width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)"></span>{{ toast }}</div>
+      </sc-if>
+
+      <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:{{ indW }};height:5px;border-radius:5px;background:var(--ink);opacity:.55;z-index:45;pointer-events:none"></div>
+    </div>
+  </div>
+  </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;dashboard&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;'A'|'B'|'C'&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ios&quot;,&quot;android&quot;],&quot;default&quot;:&quot;ios&quot;,&quot;tsType&quot;:&quot;'ios'|'android'&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;blue&quot;,&quot;cyan&quot;,&quot;violet&quot;],&quot;default&quot;:&quot;blue&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Marca&quot;}}">
+const D2R=Math.PI/180;
+const SATS=[
+ {id:'iss',norad:25544,name:'ISS',full:'Estação Espacial Internacional',type:'est',color:'#8AB6FF',size:'11px'},
+ {id:'css',norad:48274,name:'Tiangong',full:'Estação Espacial Tiangong',type:'est',color:'#F2C46B',size:'9px'},
+ {id:'hst',norad:20580,name:'Hubble',full:'Telescópio Espacial Hubble',type:'tel',color:'#C6A4FF',size:'8px'},
+ {id:'noaa',norad:43013,name:'NOAA-20',full:'Satélite meteorológico NOAA-20',type:'ter',color:'#FF9C8A',size:'7px'},
+ {id:'ls9',norad:49260,name:'Landsat 9',full:'Satélite de observação Landsat 9',type:'ter',color:'#7FE3D0',size:'7px'},
+];
+const TYPE={est:'ESTAÇÃO ESPACIAL',tel:'TELESCÓPIO ESPACIAL',ter:'OBSERVAÇÃO DA TERRA'};
+const SHOWERS=[[0,3,'Quadrântidas','até 120/h','asteroide 2003 EH1'],[3,22,'Líridas','até 18/h','cometa Thatcher'],[4,6,'Eta Aquáridas','até 50/h','cometa Halley'],[6,30,'Delta Aquáridas','até 25/h','cometa 96P/Machholz'],[7,12,'Perseidas','até 100/h','cometa Swift-Tuttle'],[9,8,'Draconídeas','até 10/h','cometa Giacobini-Zinner'],[9,21,'Orionídeas','até 20/h','cometa Halley'],[10,17,'Leônidas','até 15/h','cometa Tempel-Tuttle'],[11,14,'Geminídeas','até 150/h','asteroide 3200 Faetonte']];
+const PHASES=[['Lua nova','Céu mais escuro do mês — ideal para galáxias e meteoros.'],['Quarto crescente','Crateras em destaque no terminador, visível ao entardecer.'],['Lua cheia','Nasce a leste ao pôr do sol e fica a noite toda no céu.'],['Quarto minguante','Nasce por volta da meia-noite, visível de madrugada.']];
+const SLIDES=[
+ {tag:'01 · RASTREIE',title:'A Estação Espacial passa sobre você',body:'Saiba exatamente quando e onde olhar para ver a ISS e outros satélites cruzando o céu.',grad:'radial-gradient(circle at 35% 30%,#5C97FF,#1A3F94 45%,#061433 80%)'},
+ {tag:'02 · OBSERVE',title:'Eventos do céu, no seu horário',body:'Chuvas de meteoros e fases da Lua calculadas para a sua localização.',grad:'radial-gradient(circle at 35% 30%,#F6F2EA,#B9B4AA 50%,#4A4842 85%)'},
+ {tag:'03 · NÃO PERCA',title:'Alertas antes de acontecer',body:'Receba um aviso minutos antes da passagem, com direção e altura no céu.',grad:'radial-gradient(circle at 35% 30%,#B9A8FF,#4B37B8 45%,#120A3A 80%)'},
+];
+const MON=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+const WD=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const DIRS=['N','NE','L','SE','S','SO','O','NO'];
+const DEF_LOC={lat:-23.5505,lon:-46.6333,city:'São Paulo',src:'padrão'};
+const pad=n=>String(n).padStart(2,'0');
+const hm=t=>{const d=new Date(t);return `${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const dir=az=>DIRS[Math.round(az/45)%8];
+const dayKey=t=>{const d=new Date(t);return d.getFullYear()*400+d.getMonth()*32+d.getDate();};
+const relDay=t=>{const k=dayKey(t),n=Date.now();if(k===dayKey(n))return 'Hoje';if(k===dayKey(n+864e5))return 'Amanhã';const d=new Date(t);const w=WD[d.getDay()];return `${w[0]+w.slice(1).toLowerCase()}, ${d.getDate()}`;};
+const fmt1=x=>x.toFixed(1).replace('.',',');
+const SYN=29.530588853,NM0=Date.UTC(2000,0,6,18,14);
+const moonAge=t=>((((t-NM0)/864e5)%SYN)+SYN)%SYN;
+const moonIllum=t=>(1-Math.cos(2*Math.PI*moonAge(t)/SYN))/2;
+const moonNameOf=a=>a<1.84?'Lua nova':a<5.53?'Crescente':a<9.22?'Quarto crescente':a<12.91?'Crescente gibosa':a<16.61?'Lua cheia':a<20.3?'Minguante gibosa':a<23.99?'Quarto minguante':a<27.68?'Minguante':'Lua nova';
+const LS={get(k,d){try{const v=localStorage.getItem('nexora:'+k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem('nexora:'+k,JSON.stringify(v));}catch(e){}}};
+async function sha(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return btoa(unescape(encodeURIComponent(s)));}}
+function sunInfo(d,gmst,obs){
+ const n=d.getTime()/864e5+2440587.5-2451545;
+ const L=(280.46+0.9856474*n)%360,g=((357.528+0.9856003*n)%360)*D2R;
+ const lam=(L+1.915*Math.sin(g)+0.02*Math.sin(2*g))*D2R,eps=(23.439-4e-7*n)*D2R;
+ const vec=[Math.cos(lam),Math.cos(eps)*Math.sin(lam),Math.sin(eps)*Math.sin(lam)];
+ const ra=Math.atan2(vec[1],vec[0]),dec=Math.asin(vec[2]),ha=gmst+obs.longitude-ra;
+ return {vec,alt:Math.asin(Math.sin(obs.latitude)*Math.sin(dec)+Math.cos(obs.latitude)*Math.cos(dec)*Math.cos(ha))/D2R};
+}
+const PREFS=['alerts','saved','lead','notifPass','notifEvents','accent','reduce','layout','dashVar','platform'];
+
+class Component extends DCLogic {
+  constructor(p){super(p);
+    const pr=LS.get('prefs',{}),sess=LS.get('session',null);
+    this.state={screen:'splash',slide:0,authMode:'login',name:'',email:'',pwd:'',showPwd:false,errs:{},loading:false,
+      tab:'home',selId:'iss',filter:'all',evFilter:'all',toast:'',now:Date.now(),
+      alerts:{iss:true},saved:{},lead:10,notifPass:true,notifEvents:true,accent:null,reduce:false,layout:'both',dashVar:null,platform:null,...pr,
+      session:sess,loc:LS.get('loc',DEF_LOC),tleStatus:'loading',wxStatus:'loading',locStatus:'idle',passes:[],wx:null,libReady:false};
+    this.recs={};this.timers=[];
+  }
+  componentDidMount(){
+    this.iv=setInterval(()=>this.setState({now:Date.now()}),1000);
+    this.armSplash();this.boot();
+  }
+  componentWillUnmount(){clearInterval(this.iv);clearInterval(this.piv);clearTimeout(this.sp);clearTimeout(this.tt);this.timers.forEach(clearTimeout);}
+  componentDidUpdate(pp,ps){
+    const s=this.state;
+    if(PREFS.some(k=>s[k]!==ps[k])){const o={};PREFS.forEach(k=>o[k]=s[k]);LS.set('prefs',o);}
+    if(s.alerts!==ps.alerts||s.lead!==ps.lead||s.notifPass!==ps.notifPass||s.passes!==ps.passes)this.scheduleAlerts();
+  }
+  async boot(){
+    let n=0;while(!window.satellite&&n<60){await new Promise(r=>setTimeout(r,200));n++;}
+    this.setState({libReady:!!window.satellite});
+    if(this.state.loc.src==='padrão')this.locate(true);
+    this.loadWx();await this.loadTles();
+    this.piv=setInterval(()=>this.computePasses(),10*60e3);
+  }
+  armSplash(){clearTimeout(this.sp);this.sp=setTimeout(()=>{if(this.state.screen==='splash')this.afterSplash();},2900);}
+  afterSplash(){this.state.session?this.setState({screen:'app',tab:'home'}):this.setState({screen:'welcome',slide:0});}
+  showToast(m){clearTimeout(this.tt);this.setState({toast:m});this.tt=setTimeout(()=>this.setState({toast:''}),2600);}
+  go(screen,extra){this.setState({screen,...(extra||{})});if(screen==='splash')this.armSplash();}
+  locate(silent){
+    if(!navigator.geolocation){if(!silent)this.showToast('Localização indisponível neste navegador');return;}
+    this.setState({locStatus:'loading'});
+    navigator.geolocation.getCurrentPosition(async p=>{
+      const lat=p.coords.latitude,lon=p.coords.longitude;let city='Sua localização';
+      try{const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=pt`);const j=await r.json();city=j.city||j.locality||j.principalSubdivision||city;}catch(e){}
+      const loc={lat,lon,city,src:'GPS'};LS.set('loc',loc);this.setState({loc,locStatus:'ok'});
+      if(!silent)this.showToast(`Localização atualizada: ${city}`);
+      this.loadWx();this.computePasses();
+    },()=>{this.setState({locStatus:'denied'});if(!silent)this.showToast('Permissão de localização negada — usando '+this.state.loc.city);},{timeout:10000,maximumAge:6e5});
+  }
+  async loadWx(){
+    const {lat,lon}=this.state.loc;this.setState({wxStatus:'loading'});
+    try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=cloud_cover,relative_humidity_2m&daily=sunrise,sunset&timezone=auto&forecast_days=3`);
+      const j=await r.json();if(!j.hourly)throw 0;this.setState({wx:j,wxStatus:'ok'});}
+    catch(e){this.setState({wxStatus:'fail'});}
+  }
+  async fetchTle(n){
+    try{const r=await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${n}&FORMAT=TLE`);const l=(await r.text()).trim().split('\n').map(x=>x.trim());if(l.length>=3&&l[1].startsWith('1 '))return [l[1],l[2]];}catch(e){}
+    try{const j=await (await fetch(`https://tle.ivanstanojevic.me/api/tle/${n}`)).json();if(j.line1)return [j.line1,j.line2];}catch(e){}
+    return null;
+  }
+  async loadTles(force){
+    const S=window.satellite;if(!S){this.setState({tleStatus:'fail'});return;}
+    this.setState({tleStatus:'loading'});
+    let cache=LS.get('tle',null);
+    if(force||!cache||Date.now()-cache.ts>12*3600e3){
+      const data={};const res=await Promise.all(SATS.map(x=>this.fetchTle(x.norad)));
+      res.forEach((r,i)=>{if(r)data[SATS[i].id]=r;});
+      if(Object.keys(data).length)cache={ts:Date.now(),data};
+      if(cache)LS.set('tle',cache);
+    }
+    if(!cache||!Object.keys(cache.data).length){this.setState({tleStatus:'fail'});return;}
+    this.recs={};Object.entries(cache.data).forEach(([id,[a,b]])=>{try{this.recs[id]=S.twoline2satrec(a,b);}catch(e){}});
+    this.tleTs=cache.ts;this.setState({tleStatus:'ok'});this.computePasses();
+  }
+  obs(){const l=this.state.loc;return {latitude:l.lat*D2R,longitude:l.lon*D2R,height:0.76};}
+  look(rec,d,obs,full){
+    const S=window.satellite;const pv=S.propagate(rec,d);if(!pv||!pv.position||typeof pv.position!=='object')return null;
+    const g=S.gstime(d),la=S.ecfToLookAngles(obs,S.eciToEcf(pv.position,g));
+    const o={el:la.elevation/D2R,az:((la.azimuth/D2R)+360)%360};
+    if(full){const sun=sunInfo(d,g,obs),r=pv.position,v=sun.vec,pr=r.x*v[0]+r.y*v[1]+r.z*v[2];
+      o.sunAlt=sun.alt;o.lit=pr>0||Math.hypot(r.x-pr*v[0],r.y-pr*v[1],r.z-pr*v[2])>6371;
+      const gd=S.eciToGeodetic(pv.position,g);o.lat=S.degreesLat(gd.latitude);o.lon=S.degreesLong(gd.longitude);o.h=gd.height;
+      o.vel=Math.hypot(pv.velocity.x,pv.velocity.y,pv.velocity.z)*3600;}
+    return o;
+  }
+  computePasses(){
+    if(!window.satellite||!Object.keys(this.recs).length)return;
+    const obs=this.obs(),start=Date.now()-10*60e3,end=start+48*3600e3,step=30e3,out=[];
+    for(const sat of SATS){const rec=this.recs[sat.id];if(!rec)continue;let cur=null;
+      for(let t=start;t<=end;t+=step){const L=this.look(rec,new Date(t),obs,true);if(!L)continue;
+        if(L.el>=10){if(!cur)cur={id:sat.id+'-'+t,sat:sat.id,start:t,startAz:L.az,maxEl:L.el,maxT:t,vis:false,pts:[]};
+          if(L.el>cur.maxEl){cur.maxEl=L.el;cur.maxT=t;}cur.end=t;cur.endAz=L.az;cur.pts.push([L.az,L.el]);
+          if(L.lit&&L.sunAlt<-6)cur.vis=true;}
+        else if(cur){out.push(cur);cur=null;}}
+      if(cur)out.push(cur);}
+    out.sort((a,b)=>a.start-b.start);
+    this.setState({passes:out.filter(p=>p.end>Date.now())});
+  }
+  scheduleAlerts(){
+    this.timers.forEach(clearTimeout);this.timers=[];const s=this.state;if(!s.notifPass)return;
+    s.passes.filter(p=>s.alerts[p.sat]&&p.vis).forEach(p=>{
+      const at=p.start-s.lead*60e3-Date.now();if(at<0||at>24*3600e3)return;
+      const name=SATS.find(x=>x.id===p.sat).name,msg=`${name} passa em ${s.lead} min — olhe para ${dir(p.startAz)}, até ${Math.round(p.maxEl)}°`;
+      this.timers.push(setTimeout(()=>{this.showToast(msg);try{if(window.Notification&&Notification.permission==='granted')new Notification('Nexora',{body:msg});}catch(e){}},at));});
+  }
+  askNotif(){try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission();}catch(e){}}
+  async submit(){
+    const s=this.state,e={},email=s.email.trim().toLowerCase();
+    if(s.authMode==='signup'&&!s.name.trim())e.name='Informe seu nome';
+    if(!/^\S+@\S+\.\S+$/.test(email))e.email='E-mail inválido';
+    if(s.pwd.length<6)e.pwd='A senha precisa de 6+ caracteres';
+    if(Object.keys(e).length){this.setState({errs:e});return;}
+    this.setState({loading:true,errs:{}});
+    const users=LS.get('users',{}),h=await sha(email+':'+s.pwd);
+    await new Promise(r=>setTimeout(r,600));
+    if(s.authMode==='signup'){
+      if(users[email]){this.setState({loading:false,errs:{email:'Já existe uma conta com este e-mail'}});return;}
+      users[email]={name:s.name.trim(),h,created:Date.now()};LS.set('users',users);
+    }else{
+      if(!users[email]){this.setState({loading:false,errs:{email:'Conta não encontrada neste aparelho'}});return;}
+      if(users[email].h!==h){this.setState({loading:false,errs:{pwd:'Senha incorreta'}});return;}
+    }
+    const session={email,name:users[email].name};LS.set('session',session);
+    this.setState({loading:false,session,pwd:'',screen:'app',tab:'home'});this.askNotif();
+  }
+  renderVals(){
+    const s=this.state,P=this.props,set=o=>()=>this.setState(o),now=s.now;
+    const dashVar=s.dashVar||P.dashboard||'A',platform=s.platform||P.platform||'ios',accent=s.accent||P.accent||'blue';
+    const isIOS=platform==='ios',nd=new Date(now),clock=`${nd.getHours()}:${pad(nd.getMinutes())}`;
+    const ACC={blue:'#3B7BFF',cyan:'#0E9BD0',violet:'#6F55F5'};
+    const segOpt=(label,on,go)=>({label,go,bg:on?'#3B7BFF':'transparent',color:on?'#fff':'#A2ADC8'});
+    const ok=s.tleStatus==='ok',lib=window.satellite&&ok,obs=this.obs();
+    // live positions
+    const live={};if(lib)SATS.forEach(x=>{const r=this.recs[x.id];if(r)live[x.id]=this.look(r,new Date(now),obs,true);});
+    const passes=s.passes.filter(p=>p.end>now);
+    const nextOf=id=>passes.find(p=>p.sat===id);
+    // splash / panel
+    const jumpDefs=[['Splash',()=>this.go('splash')],['Boas-vindas',()=>this.go('welcome',{slide:0})],['Login',()=>this.go('auth',{authMode:'login',errs:{}})],['Cadastro',()=>this.go('auth',{authMode:'signup',errs:{}})],['Início',()=>this.go('app',{tab:'home'})],['Rastrear',()=>this.go('app',{tab:'track'})],['Eventos',()=>this.go('app',{tab:'events'})],['Perfil',()=>this.go('app',{tab:'profile'})]];
+    const curIdx=s.screen==='splash'?0:s.screen==='welcome'?1:s.screen==='auth'?(s.authMode==='login'?2:3):({home:4,track:5,events:6,profile:7})[s.tab];
+    const jumps=jumpDefs.map(([label,go],i)=>({n:pad(i+1),label,go,bg:i===curIdx?'rgba(59,123,255,.18)':'rgba(22,34,70,.35)',bd:i===curIdx?'rgba(59,123,255,.6)':'rgba(140,170,255,.12)'}));
+    const panelSegs=[
+      {title:'DASHBOARD',opts:[['A · Contagem','A'],['B · Órbita','B'],['C · Noite','C']].map(([l,v])=>segOpt(l,dashVar===v,()=>this.setState({dashVar:v,screen:'app',tab:'home'})))},
+      {title:'PLATAFORMA',opts:[['iOS','ios'],['Android','android']].map(([l,v])=>segOpt(l,platform===v,set({platform:v})))},
+      {title:'EXIBIÇÃO',opts:[['Lado a lado','both'],['Escuro','dark'],['Claro','light']].map(([l,v])=>segOpt(l,s.layout===v,set({layout:v})))},
+    ];
+    const stc=st=>st==='ok'?'#5BD69A':st==='fail'||st==='denied'?'#FF6B7A':'#F2C46B';
+    const tleAge=this.tleTs?Math.round((Date.now()-this.tleTs)/3600e3)+'h atrás':'—';
+    const statusRows=[{label:'Órbitas (TLE)',val:ok?tleAge:s.tleStatus==='fail'?'falhou':'carregando',c:stc(s.tleStatus)},{label:'Tempo (Open-Meteo)',val:s.wxStatus==='ok'?'ok':s.wxStatus==='fail'?'falhou':'carregando',c:stc(s.wxStatus)},{label:'Local · '+s.loc.city,val:s.loc.src,c:s.loc.src==='GPS'?'#5BD69A':'#F2C46B'}];
+    const phones=s.layout==='both'?[{theme:'dark',label:'MODO ESCURO'},{theme:'light',label:'MODO CLARO'}]:[{theme:s.layout,label:s.layout==='dark'?'MODO ESCURO':'MODO CLARO'}];
+    // user
+    const displayName=s.session?.name||'Visitante',first=displayName.split(' ')[0];
+    const initials=displayName.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('')||'V';
+    const h=nd.getHours(),greeting=`${h<5?'Boa noite':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}, ${first}`;
+    const dateLabel=`${WD[nd.getDay()]} · ${nd.getDate()} ${MON[nd.getMonth()]} · ${s.loc.city.toUpperCase()}`;
+    // moon
+    const age=moonAge(now),illum=moonIllum(now),waxing=age<SYN/2;
+    const moonShift=((waxing?1:-1)*(s.loc.lat<0?1:-1)*(8+illum*100))+'%';
+    // weather
+    let cloudNow=null,cloudNight=null,hum=null,sunset=null,sunrise=null,sunriseNext=null;
+    if(s.wx){const H=s.wx.hourly,T=H.time;const ds=`${nd.getFullYear()}-${pad(nd.getMonth()+1)}-${pad(nd.getDate())}`;
+      const iNow=T.indexOf(`${ds}T${pad(h)}:00`);if(iNow>=0){cloudNow=H.cloud_cover[iNow];hum=H.relative_humidity_2m[iNow];}
+      const tgt=h>=5?`${ds}T21:00`:`${ds}T${pad(Math.max(h,0))}:00`;const iN=T.indexOf(tgt);cloudNight=iN>=0?H.cloud_cover[iN]:cloudNow;
+      const Dd=s.wx.daily;const di=Dd.time.indexOf(ds);if(di>=0){sunset=Dd.sunset[di];sunrise=Dd.sunrise[di];sunriseNext=Dd.sunrise[di+1];}}
+    const toMs=str=>str?new Date(str).getTime():null;
+    const cN=cloudNight??50,score=Math.max(0,Math.min(10,10*(1-cN/100)*0.75+10*(1-illum)*0.25));
+    const skyScore=s.wx?fmt1(score):'—';
+    const skyLabel=!s.wx?'Carregando previsão…':score>=8?'Ótima noite para observar':score>=6?'Boa noite para observar':score>=4?'Condições regulares':'Céu encoberto esta noite';
+    // passes
+    const fmtLeft=sec=>`${pad(Math.floor(sec/3600))}:${pad(Math.floor(sec%3600/60))}:${pad(sec%60)}`;
+    const issPass=passes.find(p=>p.sat==='iss'&&p.vis)||nextOf('iss');
+    const passing=issPass&&issPass.start<=now;
+    const left=issPass?Math.max(0,Math.round((issPass.start-now)/1000)):0;
+    const dataLoading=s.tleStatus==='loading'||(ok&&!s.passes.length&&!this._computed);
+    if(ok&&s.passes)this._computed=true;
+    const dataFailed=s.tleStatus==='fail';
+    const dataMsg=dataFailed?'Não foi possível baixar as órbitas. Verifique a conexão.':dataLoading?'Calculando passagens para '+s.loc.city+'…':'Nenhuma passagem da ISS nas próximas 48h.';
+    const issLive=live.iss;
+    const heroStats=issPass?[{k:'Altura máx.',v:Math.round(issPass.maxEl)+'°'},{k:'Direção',v:`${dir(issPass.startAz)} → ${dir(issPass.endAz)}`},{k:'Duração',v:Math.max(1,Math.round((issPass.end-issPass.start)/60e3))+' min'}]:[];
+    const toggleAlert=id=>{const on=!s.alerts[id];this.setState({alerts:{...s.alerts,[id]:on}});if(on)this.askNotif();this.showToast(on?`Alerta ativado · ${s.lead} min antes`:'Alerta desativado');};
+    // radar
+    const proj=(az,el)=>{const r=165*(90-el)/90;return [175+r*Math.sin(az*D2R),175-r*Math.cos(az*D2R)];};
+    const inF=x=>s.filter==='all'||x.type===s.filter;
+    const sats=SATS.map(x=>{const L=live[x.id],up=L&&L.el>0,sel=x.id===s.selId;const [px,py]=L?proj(L.az,Math.max(0,L.el)):[175,175];
+      return {name:x.name,sel,x:px+'px',y:py+'px',vis:up&&inF(x)?'visible':'hidden',op:inF(x)?1:.2,color:x.color,size:sel?'13px':x.size,select:()=>this.setState({selId:x.id})};});
+    const noneUp=lib&&!SATS.some(x=>live[x.id]&&live[x.id].el>0&&inF(x));
+    const nxt=passes.find(p=>inF(SATS.find(x=>x.id===p.sat))&&p.start>now);
+    const nextUpTxt=nxt?`Próximo: ${SATS.find(x=>x.id===nxt.sat).name} · ${relDay(nxt.start)} ${hm(nxt.start)}`:(ok?'Sem passagens em 48h':'Carregando órbitas…');
+    const selPass=nextOf(s.selId);
+    const pathDots=selPass?selPass.pts.map(([az,el])=>{const [x,y]=proj(az,el);return {x:x+'px',y:y+'px',op:.55};}):[];
+    const S0=SATS.find(x=>x.id===s.selId),L0=live[S0.id];
+    const sel={full:S0.full,typeLabel:TYPE[S0.type],el:L0?Math.round(L0.el)+'°':'—',az:L0?`${Math.round(L0.az)}° ${dir(L0.az)}`:'—',alt:L0?Math.round(L0.h)+' km':'—',vel:L0?Math.round(L0.vel).toLocaleString('pt-BR'):'—',
+      next:selPass?(selPass.start<=now?`Agora · até ${hm(selPass.end)}`:`${relDay(selPass.start)} · ${hm(selPass.start)} · ${selPass.vis?'visível':'diurna'}`):(ok?'Nenhuma em 48h':'—')};
+    const selOn=!!s.alerts[S0.id];
+    const satList=SATS.filter(inF).map(x=>{const L=live[x.id];return {name:x.name,color:x.color,elTxt:L?(L.el>0?`${Math.round(L.el)}° · ${dir(L.az)}`:'abaixo do horizonte'):'—',select:()=>this.setState({selId:x.id}),rowBg:x.id===s.selId?'var(--card2)':'transparent',rowBd:x.id===s.selId?'var(--acc)':'var(--line)'};});
+    const filters=[['Todos','all'],['Estações','est'],['Telescópios','tel'],['Terra','ter']].map(([label,v])=>{const on=s.filter===v;return{label,go:set({filter:v}),bg:on?'var(--acc)':'var(--card)',bd:on?'var(--acc)':'var(--line)',color:on?'#fff':'var(--ink2)'};});
+    // events
+    const ev=[];
+    passes.filter(p=>p.vis&&p.start>now-60e3).slice(0,5).forEach(p=>{const x=SATS.find(z=>z.id===p.sat);
+      ev.push({id:'p-'+p.sat+'-'+Math.round(p.start/6e4),t:p.start,cat:'sat',tag:'SATÉLITE',title:`Passagem visível · ${x.name}`,desc:`Cruza de ${dir(p.startAz)} para ${dir(p.endAz)}, até ${Math.round(p.maxEl)}° acima do horizonte.`,time:`${relDay(p.start)} · ${hm(p.start)}`,short:`${hm(p.start)} · ${Math.round(p.maxEl)}° · ${dir(p.startAz)}→${dir(p.endAz)}`,vis:Math.max(1,Math.min(5,Math.round(p.maxEl/18)))});});
+    const lastNew=now-age*864e5;
+    for(let c=0;c<2;c++)[0,.25,.5,.75].forEach((q,i)=>{const t=lastNew+(c+q)*SYN*864e5;if(t>now&&t<now+35*864e5)ev.push({id:'m-'+i+'-'+dayKey(t),t,cat:'lua',tag:'LUA',title:PHASES[i][0],desc:PHASES[i][1],time:`${relDay(t)} · ${hm(t)}`,short:PHASES[i][1].split(',')[0].split('—')[0],vis:i===2?5:i===0?2:4});});
+    const Y=nd.getFullYear();SHOWERS.forEach(([m,d,nm,rate,par])=>{[Y,Y+1].forEach(y=>{const t=new Date(y,m,d,2).getTime();if(t>now-864e5&&t<now+70*864e5)ev.push({id:'s-'+nm+y,t,cat:'met',tag:'METEOROS',title:'Pico das '+nm,desc:`${rate[0].toUpperCase()+rate.slice(1)}, restos do ${par}. Melhor de madrugada, longe das luzes.`,time:`${relDay(t)} · madrugada`,short:rate[0].toUpperCase()+rate.slice(1),vis:Math.max(1,Math.round(5*(1-moonIllum(t))))});});});
+    ev.sort((a,b)=>a.t-b.t);
+    const decorate=e=>{const on=!!s.saved[e.id],d=new Date(e.t),today=dayKey(e.t)===dayKey(now);return {...e,day:d.getDate(),mon:MON[d.getMonth()],when:relDay(e.t),
+      dateBg:today?'var(--acc)':'var(--line)',dateColor:today?'#fff':'var(--ink)',saveBg:on?'var(--acc)':'transparent',saveColor:on?'#fff':'var(--ink3)',saveFill:on?'currentColor':'none',
+      bars:[1,2,3,4,5].map(i=>({bg:i<=e.vis?'var(--acc)':'var(--line)'})),
+      toggle:()=>{this.setState({saved:{...s.saved,[e.id]:!on}});this.showToast(on?'Lembrete removido':'Lembrete salvo');}};};
+    const eventsList=ev.filter(e=>s.evFilter==='all'||e.cat===s.evFilter).map(decorate);
+    const evFilters=[['Todos','all'],['Satélites','sat'],['Lua','lua'],['Meteoros','met']].map(([label,v])=>{const on=s.evFilter===v;return{label,go:set({evFilter:v}),bg:on?'var(--acc)':'transparent',color:on?'#fff':'var(--ink2)'};});
+    // dash B
+    const th=issLive?((issLive.lon+180)/360)*2*Math.PI:now/30000,ox=150*Math.cos(th),oy=55*Math.sin(th),rr=-20*D2R;
+    const passRows=passes.slice(0,6).map(p=>{const x=SATS.find(z=>z.id===p.sat);return {time:hm(p.start),day:relDay(p.start),name:x.name,el:Math.round(p.maxEl)+'°',vis:p.vis?'visível':'diurna',visColor:p.vis?'var(--acc)':'var(--ink3)',w:Math.round(p.maxEl/90*100)+'%',go:()=>this.setState({tab:'track',selId:p.sat,filter:'all'})};});
+    // dash C timeline
+    const tl=[];const add=(t,title,sub,dot,id)=>{if(t&&t>now-5*60e3&&t<now+16*3600e3)tl.push({t,title,sub,dot,id});};
+    add(toMs(sunset),'Pôr do sol','Início do crepúsculo','#F2A65A');
+    add(toMs(sunrise),'Nascer do sol','Fim da janela de observação','#F2A65A');add(toMs(sunriseNext),'Nascer do sol','Fim da janela de observação','#F2A65A');
+    passes.forEach(p=>{const x=SATS.find(z=>z.id===p.sat);add(p.start,x.name,`${dir(p.startAz)} → ${dir(p.endAz)} · ${Math.round(p.maxEl)}° · ${p.vis?'visível':'diurna'}`,p.vis?x.color:'var(--ink3)',p.sat);});
+    tl.sort((a,b)=>a.t-b.t);
+    const timeline=tl.slice(0,8).map(x=>({time:hm(x.t),title:x.title,sub:x.sub,dot:x.dot,glow:`0 0 10px ${x.dot}`,bg:x.id==='iss'?'var(--card2)':'var(--card)',go:x.id?()=>this.setState({tab:'track',selId:x.id,filter:'all'}):()=>{}}));
+    // profile
+    const tog=(label,sub,on,fn)=>({label,sub,toggle:fn,bg:on?'var(--acc)':'var(--line)',x:on?'23px':'3px'});
+    const perm=window.Notification?Notification.permission:'unsupported';
+    const toggles=[tog('Passagens de satélites',perm==='denied'?'Notificações bloqueadas no navegador':'Aviso antes das passagens visíveis',s.notifPass,()=>{this.setState({notifPass:!s.notifPass});if(!s.notifPass)this.askNotif();}),tog('Eventos no céu','Meteoros e fases da Lua salvos',s.notifEvents,set({notifEvents:!s.notifEvents}))];
+    const toggles2=[tog('Reduzir movimento','Desativa animações e transições',s.reduce,set({reduce:!s.reduce}))];
+    const segIn=(label,on,go)=>({label,go,bg:on?'var(--solid)':'transparent',color:on?'var(--ink)':'var(--ink2)',sh:on?'0 2px 8px rgba(0,0,0,.15)':'none'});
+    const tabs=['home','track','events','profile'],tabGo={},navBg={},navC={};
+    tabs.forEach(k=>{tabGo[k]=set({tab:k});navBg[k]=s.tab===k?'var(--acc)':'transparent';navC[k]=s.tab===k?'#fff':'var(--ink2)';});
+    const slide=SLIDES[s.slide];
+    return {
+      jumps,panelSegs,statusRows,phones,accent,motion:s.reduce?'reduced':'full',
+      outerR:isIOS?'58px':'44px',innerR:isIOS?'48px':'34px',isIOS,isAndroid:!isIOS,indW:isIOS?'134px':'108px',
+      topPad:isIOS?'58px':'46px',navBottom:isIOS?'26px':'22px',clock,sbColor:s.screen==='splash'?'#EEF2FA':'var(--ink)',
+      isSplash:s.screen==='splash',isWelcome:s.screen==='welcome',isAuth:s.screen==='auth',isApp:s.screen==='app',
+      splashMsg:s.tleStatus==='loading'?'Baixando órbitas…':ok?'Pronto':'Modo offline',skipSplash:()=>this.afterSplash(),
+      slide,slideIdx:s.slide,dots:SLIDES.map((_,i)=>({w:i===s.slide?'28px':'8px',bg:i===s.slide?'var(--acc)':'var(--line)',go:set({slide:i})})),
+      ctaLabel:s.slide<2?'Continuar':'Começar',nextSlide:()=>s.slide<2?this.setState({slide:s.slide+1}):this.go('auth',{authMode:'signup',errs:{}}),
+      goAuth:()=>this.go('auth',{authMode:'signup',errs:{}}),goLogin:()=>this.go('auth',{authMode:'login',errs:{}}),goWelcome:()=>this.go('welcome'),
+      isLogin:s.authMode==='login',isSignup:s.authMode==='signup',
+      authTitle:s.authMode==='login'?'Bem-vindo de volta':'Crie sua conta',authSub:s.authMode==='login'?'Entre para ver as passagens desta noite.':'Leva menos de um minuto.',
+      tabLeft:s.authMode==='login'?'4px':'50%',loginTabColor:s.authMode==='login'?'#fff':'var(--ink2)',signupTabColor:s.authMode==='signup'?'#fff':'var(--ink2)',
+      modeLogin:set({authMode:'login',errs:{}}),modeSignup:set({authMode:'signup',errs:{}}),
+      name:s.name,email:s.email,pwd:s.pwd,
+      onName:e=>this.setState({name:e.target.value}),onEmail:e=>this.setState({email:e.target.value}),onPwd:e=>this.setState({pwd:e.target.value}),
+      onEnter:e=>{if(e.key==='Enter')this.submit();},
+      errName:s.errs.name||'',errEmail:s.errs.email||'',errPwd:s.errs.pwd||'',
+      bdName:s.errs.name?'#FF6B7A':'var(--line)',bdEmail:s.errs.email?'#FF6B7A':'var(--line)',bdPwd:s.errs.pwd?'#FF6B7A':'var(--line)',
+      pwdType:s.showPwd?'text':'password',pwdToggleLabel:s.showPwd?'Ocultar':'Mostrar',togglePwd:set({showPwd:!s.showPwd}),
+      forgot:()=>this.showToast('Contas ficam neste aparelho — crie uma nova conta se esqueceu a senha.'),
+      loading:s.loading,submitLabel:s.loading?'':(s.authMode==='login'?'Entrar':'Criar conta'),submit:()=>this.submit(),
+      guestLogin:()=>{const session={email:'',name:'Visitante',guest:true};LS.set('session',session);this.setState({session,screen:'app',tab:'home'});},
+      tabHome:s.tab==='home',tabTrack:s.tab==='track',tabEvents:s.tab==='events',tabProfile:s.tab==='profile',
+      dashVar,dashA:dashVar==='A',dashB:dashVar==='B',dashC:dashVar==='C',dateLabel,greeting,initials,displayName,
+      displayEmail:s.session?.guest?'Sem conta · dados locais':(s.session?.email||''),
+      goProfile:set({tab:'profile'}),goEvents:set({tab:'events'}),seeIss:set({tab:'track',selId:'iss',filter:'all'}),
+      hasPass:!!issPass,noPass:!issPass,dataLoading,dataFailed,dataMsg,retry:()=>this.loadTles(true),
+      heroTag:issPass&&!issPass.vis?'PRÓXIMA PASSAGEM · ISS (DIURNA)':'PRÓXIMA PASSAGEM VISÍVEL · ISS',
+      visBadge:passing?'Agora':issPass?.vis?'Visível':'Diurna',visBadgeBg:issPass?.vis||passing?'rgba(80,220,160,.14)':'rgba(255,255,255,.08)',visBadgeColor:issPass?.vis||passing?'#7CE8B8':'#A9C2F2',
+      countLabel:passing?'acontecendo agora':'começa em',countdown:passing?(issLive?Math.round(issLive.el)+'°':'—'):fmtLeft(left),
+      heroWhen:passing?`Olhe para ${issLive?dir(issLive.az):'—'}`:issPass?`${relDay(issPass.start)} · ${hm(issPass.start)}`:'',
+      ringOffset:passing?0:590.6*Math.min(left,6*3600)/(6*3600),heroStats,
+      issAlertBg:s.alerts.iss?'rgba(59,123,255,.35)':'rgba(255,255,255,.06)',issAlertFill:s.alerts.iss?'currentColor':'none',issAlertLabel:s.alerts.iss?'Alerta on':'Alertar',
+      toggleIssAlert:()=>toggleAlert('iss'),
+      shortcuts:[{label:'Rastrear',r:'50%',t:'none',go:set({tab:'track'})},{label:'Eventos',r:'5px',t:'none',go:set({tab:'events',evFilter:'all'})},{label:'Lua',r:'50% 50% 50% 0',t:'rotate(-45deg)',go:set({tab:'events',evFilter:'lua'})},{label:'Meteoros',r:'4px',t:'rotate(45deg)',go:set({tab:'events',evFilter:'met'})}],
+      moonName:moonNameOf(age),moonIllumTxt:Math.round(illum*100)+'%',moonShift,
+      skyScore,skyBarW:(s.wx?score*10:0)+'%',skySub:s.wx?`Nuvens ${cN}% · Lua ${Math.round(illum*100)}%`:(s.wxStatus==='fail'?'Previsão indisponível':'Carregando…'),skyLabel,
+      skyStats:[{k:'Nuvens',v:cloudNow!=null?cloudNow+'%':'—'},{k:'Umidade',v:hum!=null?hum+'%':'—'},{k:'Pôr do sol',v:sunset?sunset.slice(11,16):'—'}],
+      eventsTop:ev.slice(0,5).map(decorate),
+      orbX:(175+ox*Math.cos(rr)-oy*Math.sin(rr))+'px',orbY:(0.54*340+ox*Math.sin(rr)+oy*Math.cos(rr))+'px',orbZ:Math.sin(th)<0?1:3,
+      issAltTxt:issLive?`ALT ${Math.round(issLive.h)} KM`:'—',issLat:issLive?issLive.lat.toFixed(2)+'°':'—',issLon:issLive?issLive.lon.toFixed(2)+'°':'—',issVel:issLive?(issLive.vel/1000).toFixed(1).replace('.',',')+'k':'—',
+      passRows,passesCount:passes.length?`${passes.filter(p=>p.vis).length} visíveis em 48h`:'',timeline,
+      liveDot:ok?'#FF5D6C':'#F2C46B',liveLabel:ok?`AO VIVO · ${clock}:${pad(nd.getSeconds())}`:(s.tleStatus==='fail'?'SEM DADOS':'CARREGANDO'),
+      filters,sats,pathDots,noneUp,nextUpTxt,sel,selId:s.selId,
+      selAlertBg:selOn?'var(--acc)':'transparent',selAlertColor:selOn?'#fff':'var(--ink2)',selAlertFill:selOn?'currentColor':'none',toggleSelAlert:()=>toggleAlert(S0.id),satList,
+      cityLabel:s.loc.city,cityUpper:s.loc.city.toUpperCase(),evFilters,eventsList,noEvents:!eventsList.length,
+      alertCount:Object.values(s.alerts).filter(Boolean).length,savedCount:Object.values(s.saved).filter(Boolean).length,passCount48:passes.length,
+      toggles,toggles2,leadOpts:[5,10,15,30].map(m=>segIn(m+' min',s.lead===m,set({lead:m}))),
+      themeOpts:[['Escuro','dark'],['Claro','light'],['Ambos','both']].map(([l,v])=>segIn(l,s.layout===v,set({layout:v}))),
+      accentOpts:Object.keys(ACC).map(k=>({c:ACC[k],go:set({accent:k}),ring:accent===k?`0 0 0 3px var(--solid),0 0 0 5px ${ACC[k]}`:'none'})),
+      accountRows:[{label:'Localização',val:(s.locStatus==='loading'?'Localizando…':s.loc.city+' · atualizar')+' ›',go:()=>this.locate(false)},{label:'Atualizar órbitas',val:(ok?tleAge:'—')+' ›',go:async()=>{await this.loadTles(true);this.showToast('Órbitas atualizadas');}},{label:'Fontes de dados',val:'CelesTrak · Open-Meteo',go:()=>{}}],
+      logout:()=>{LS.set('session',null);this.setState({session:null,email:'',pwd:''});this.go('auth',{authMode:'login',errs:{}});},
+      toast:s.toast,tabGo,navBg,navC,
+    };
+  }
+}
+</script>
+</body>
+</html>
