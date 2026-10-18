@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/*
+ * MesaOn — tokens de design
+ * Paleta da marca + variações com contraste AA para texto (WCAG 2.1).
+ *  - #3B82F6 (azul vibrante) é usado em destaques, ícones e foco.
+ *  - #2563EB é usado em botões/links com texto branco (contraste 5.2:1).
+ */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-navy-950: #0b1426;
+  --color-navy-900: #14213d;
+  --color-navy-800: #1f2f52;
+  --color-navy-700: #2b3d66;
+
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+
+  --color-surface: #ffffff;
+  --color-canvas: #f3f5f9;
+  --color-line: #e3e7ef;
+  --color-ink: #14213d;
+  --color-muted: #55607a;
+
+  --color-success-50: #f0fdf4;
+  --color-success-500: #16a34a;
+  --color-success-700: #15803d;
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-700: #b45309;
+  --color-danger-50: #fef2f2;
+  --color-danger-500: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgb(20 33 61 / 0.05), 0 1px 3px rgb(20 33 61 / 0.06);
+  --shadow-raised: 0 10px 30px -12px rgb(20 33 61 / 0.25);
+
+  --animate-pop-in: pop-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pulse-ring: pulse-ring 1.6s ease-out infinite;
+
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgb(59 130 246 / 0.45); }
+    70% { box-shadow: 0 0 0 10px rgb(59 130 246 / 0); }
+    100% { box-shadow: 0 0 0 0 rgb(59 130 246 / 0); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--color-brand-100);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Impressão de etiquetas de mesa */
+@media print {
+  @page {
+    margin: 10mm;
+  }
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

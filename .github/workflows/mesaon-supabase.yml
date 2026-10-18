@@ -1,0 +1,39 @@
+# Aplica as migrações do MesaOn (mesaon/supabase/migrations) no projeto Supabase.
+# Configure em Settings → Secrets and variables → Actions:
+#   SUPABASE_ACCESS_TOKEN  – token pessoal (supabase.com/dashboard/account/tokens)
+#   SUPABASE_PROJECT_ID    – "Reference ID" do projeto (Project Settings → General)
+#   SUPABASE_DB_PASSWORD   – senha do banco do projeto
+# Depois rode manualmente em Actions → "MesaOn: aplicar banco no Supabase" → Run workflow.
+name: "MesaOn: aplicar banco no Supabase"
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Só mostrar o que seria aplicado (sem alterar o banco)"
+        type: boolean
+        default: false
+
+jobs:
+  db-push:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mesaon
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Vincular projeto
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}" --password "$SUPABASE_DB_PASSWORD"
+      - name: Aplicar migrações
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            supabase db push --dry-run --password "$SUPABASE_DB_PASSWORD"
+          else
+            supabase db push --password "$SUPABASE_DB_PASSWORD"
+          fi
